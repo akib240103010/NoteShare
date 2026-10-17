@@ -142,7 +142,7 @@ export default function ThemeToggle({
       <div
         role="group"
         aria-label="Standard Theme Controls"
-        className="hidden xl:inline-flex items-center gap-0.5"
+        className="hidden 2xl:inline-flex items-center gap-0.5"
       >
         {standardThemes.map((opt) => {
           const Icon = opt.icon;
@@ -176,8 +176,8 @@ export default function ThemeToggle({
         })}
       </div>
 
-      {/* Standard Theme Dropdown on compact viewports (< xl) */}
-      <div className="xl:hidden relative">
+      {/* Standard Theme Dropdown on compact viewports (< 2xl) */}
+      <div className="2xl:hidden relative">
         <button
           type="button"
           onClick={() => setIsDropdownOpen((prev) => !prev)}
@@ -252,7 +252,7 @@ export default function ThemeToggle({
               isAnime ? 'animate-pulse text-white' : 'text-pink-500'
             }`}
           />
-          <span className="hidden xl:inline">Anime Themes</span>
+          <span className="hidden 2xl:inline">Anime Themes</span>
         </button>
 
         {/* Smooth Hover Tooltip */}

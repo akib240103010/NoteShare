@@ -142,7 +142,7 @@ export default function Navbar({
         {/* Offline Banner when disconnected */}
         <OfflineBanner />
 
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-16 gap-2">
             
             {/* Interactive Brand Logo with Scale-on-Hover & Click-to-Reset Home */}
@@ -206,7 +206,7 @@ export default function Navbar({
                   aria-expanded={categoriesDropdownOpen}
                 >
                   <Layers className={`w-4 h-4 shrink-0 ${isCategoriesActive ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
-                  <span>
+                  <span className="truncate max-w-[110px] xl:max-w-[140px]">
                     {selectedCategory !== 'All Categories' ? selectedCategory : 'Categories'}
                   </span>
                   <ChevronDown
@@ -262,11 +262,11 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={onFocusSearch}
-                className="px-3 py-1.5 text-xs xl:text-sm text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 hover:bg-slate-100/80 dark:hover:bg-gray-800/80 rounded-xl flex items-center gap-2 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-gray-700 cursor-pointer shrink-0"
+                className="px-2.5 xl:px-3 py-1.5 text-xs xl:text-sm text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 hover:bg-slate-100/80 dark:hover:bg-gray-800/80 rounded-xl flex items-center gap-1.5 xl:gap-2 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-gray-700 cursor-pointer shrink-0"
                 title="Focus search input (or press /)"
               >
                 <Search className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500 shrink-0" />
-                <span>Search</span>
+                <span className="hidden xl:inline">Search</span>
                 <kbd className="text-[10px] font-semibold bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 px-1.5 py-0.2 rounded-md border border-slate-200 dark:border-gray-700">
                   /
                 </kbd>
@@ -319,7 +319,7 @@ export default function Navbar({
                       <WifiOff className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                     )}
                   </span>
-                  <span className="hidden xl:inline font-semibold">
+                  <span className="hidden 2xl:inline font-semibold">
                     {isOnline ? 'Online' : 'Offline'}
                   </span>
                 </div>
@@ -356,7 +356,7 @@ export default function Navbar({
                   }`}
                 />
                 <Database className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                <span className="hidden xl:inline font-semibold">
+                <span className="hidden 2xl:inline font-semibold">
                   {isConfigured ? 'Supabase' : 'Setup Backend'}
                 </span>
               </button>
@@ -424,7 +424,7 @@ export default function Navbar({
                 type="button"
                 onClick={handleNavigateUpload}
                 title={!isOnline ? 'Uploading disabled while offline' : 'Upload Study Notes'}
-                className={`relative inline-flex items-center gap-1.5 min-h-[40px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 active:scale-95 ${
+                className={`relative inline-flex items-center gap-1.5 min-h-[40px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 active:scale-95 whitespace-nowrap ${
                   !isOnline
                     ? 'bg-slate-200 dark:bg-gray-800 text-slate-500 dark:text-gray-400 border border-slate-300 dark:border-gray-700 opacity-80 cursor-not-allowed hover:scale-100 hover:shadow-none'
                     : currentView === 'upload'
@@ -437,8 +437,8 @@ export default function Navbar({
                 ) : (
                   <WifiOff className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                 )}
-                <span className="hidden sm:inline">{!isOnline ? 'Upload (Offline)' : 'Upload Notes'}</span>
-                <span className="sm:hidden">{!isOnline ? 'Offline' : 'Upload'}</span>
+                <span className="hidden sm:inline whitespace-nowrap">{!isOnline ? 'Upload (Offline)' : 'Upload Notes'}</span>
+                <span className="sm:hidden whitespace-nowrap">{!isOnline ? 'Offline' : 'Upload'}</span>
               </button>
 
               {/* Hamburger Menu Button with 44x44px minimum touch target */}
