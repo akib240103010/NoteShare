@@ -21,6 +21,10 @@ import {
   WifiOff,
   Pencil,
   RotateCcw,
+  Plus,
+  Trash2,
+  Files,
+  Layers,
 } from 'lucide-react';
 import { CATEGORIES, RESOURCE_TYPES, UNIVERSITIES } from '../data/initialNotes';
 import { useAuth } from '../context/AuthContext';
@@ -64,8 +68,9 @@ export default function UploadPage({
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [integrityAgreed, setIntegrityAgreed] = useState(false);
 
-  // File states (PDF and Image attachments)
-  const [selectedFile, setSelectedFile] = useState(null);
+  // File states (Multiple PDF and Image attachments for the same course)
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const selectedFile = selectedFiles[0] || null;
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
@@ -119,7 +124,7 @@ export default function UploadPage({
         setIsAnonymous(editingNote.author.name === 'Anonymous Scholar');
       }
       setIntegrityAgreed(true);
-      setSelectedFile(null);
+      setSelectedFiles([]);
       setImagePreviewUrl(null);
     }
   }, [editingNote]);
@@ -154,39 +159,89 @@ export default function UploadPage({
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
-  // Process chosen file (PDF or Image)
-  const processSelectedFile = async (file) => {
-    const isImage = file.type.startsWith('image/');
-    let preview = null;
-    if (isImage) {
-      preview = URL.createObjectURL(file);
-      setImagePreviewUrl(preview);
-    } else {
-      setImagePreviewUrl(null);
+  // Process chosen multiple files (PDFs and Images)
+  const processFiles = async (fileList) => {
+    const rawFiles = Array.from(fileList || []);
+    if (rawFiles.length === 0) return;
+
+    const newItems = [];
+
+    for (const file of rawFiles) {
+      const isImage = file.type.startsWith('image/');
+      let preview = null;
+      if (isImage) {
+        preview = URL.createObjectURL(file);
+      }
+
+      let detectedPages = 1;
+      if (!isImage && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
+        try {
+          const slice = await file.slice(0, 120000).text();
+          const countMatch = slice.match(/\/Count\s+(\d+)/);
+          if (countMatch && parseInt(countMatch[1], 10) > 0) {
+            detectedPages = Math.min(500, parseInt(countMatch[1], 10));
+          }
+        } catch {
+          detectedPages = 1;
+        }
+      }
+
+      // Generate a user-friendly default note title from filename
+      const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ').trim();
+      const cleanTitle = baseName ? (baseName.charAt(0).toUpperCase() + baseName.slice(1)) : 'Lecture Notes';
+
+      newItems.push({
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        name: file.name,
+        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+        rawFile: file,
+        type: file.type,
+        isImage,
+        previewUrl: preview,
+        pages: detectedPages,
+        customTitle: cleanTitle,
+      });
     }
 
-    let detectedPages = isImage ? 1 : 1;
-    if (!isImage && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
-      try {
-        const slice = await file.slice(0, 120000).text();
-        const countMatch = slice.match(/\/Count\s+(\d+)/);
-        if (countMatch && parseInt(countMatch[1], 10) > 0) {
-          detectedPages = Math.min(500, parseInt(countMatch[1], 10));
-        }
-      } catch {
-        detectedPages = 1;
+    if (isEditMode) {
+      // In edit mode, replace attachment with 1 single file
+      setSelectedFiles(newItems.slice(0, 1));
+      if (newItems[0]?.previewUrl) {
+        setImagePreviewUrl(newItems[0].previewUrl);
+      } else {
+        setImagePreviewUrl(null);
+      }
+    } else {
+      // In create mode, append new files to selectedFiles (prevent exact duplicates)
+      setSelectedFiles((prev) => {
+        const existingKeys = new Set(prev.map((f) => `${f.name}_${f.size}`));
+        const filteredNew = newItems.filter((f) => !existingKeys.has(`${f.name}_${f.size}`));
+        return [...prev, ...filteredNew];
+      });
+      if (newItems.length === 1 && newItems[0].isImage) {
+        setImagePreviewUrl(newItems[0].previewUrl);
       }
     }
 
-    setSelectedFile({
-      name: file.name,
-      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-      rawFile: file,
-      type: file.type,
-      isImage,
-      pages: detectedPages,
-    });
     setErrors((prev) => ({ ...prev, file: undefined }));
+  };
+
+  const handleRemoveFile = (fileId) => {
+    setSelectedFiles((prev) => prev.filter((f) => f.id !== fileId));
+  };
+
+  const handleUpdateFileTitle = (fileId, newTitle) => {
+    setSelectedFiles((prev) =>
+      prev.map((f) => (f.id === fileId ? { ...f, customTitle: newTitle } : f))
+    );
+  };
+
+  const handleClearAllFiles = () => {
+    setSelectedFiles([]);
+    setImagePreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Drag and Drop
@@ -202,26 +257,33 @@ export default function UploadPage({
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processSelectedFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
     }
   };
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      processSelectedFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
   // Validation
   const validateForm = () => {
     const errs = {};
-    if (!title.trim()) errs.title = 'Please provide a descriptive title for your notes.';
+    if (!title.trim() && selectedFiles.length <= 1) {
+      errs.title = 'Please provide a descriptive title for your notes.';
+    } else if (!title.trim() && selectedFiles.length > 1) {
+      errs.title = 'Please provide a general title or topic for this batch of course notes.';
+    }
     if (!courseCode.trim()) errs.courseCode = 'Course code is required (e.g. CS106, MATH201).';
     if (!university.trim()) errs.university = 'Please specify the university or college.';
     if (!description.trim()) errs.description = 'Please provide a brief summary of topics covered.';
-    if (!selectedFile && (!isEditMode || !editingNote?.file)) {
-      errs.file = 'Please upload a PDF document or image attachment.';
+    if (selectedFiles.length === 0 && (!isEditMode || !editingNote?.file)) {
+      errs.file = 'Please upload at least one PDF document or image attachment.';
     }
     if (!integrityAgreed) errs.integrity = 'You must confirm compliance with the academic integrity policy.';
 
@@ -455,84 +517,205 @@ export default function UploadPage({
         return;
       }
 
-      // CREATE NEW NOTE FLOW
-      const notePayload = {
-        id: `note-${Date.now()}`,
-        title: title.trim(),
-        courseCode: courseCode.trim().toUpperCase(),
-        courseName: courseName.trim() || courseCode.trim().toUpperCase(),
-        category, // metadata: subject
-        university: university.trim(),
-        universityCountry: 'Global',
-        academicLevel,
-        resourceType,
-        description: description.trim(),
-        tags: tags.length > 0 ? tags : ['StudyNotes'],
-        author: {
-          name: isAnonymous ? 'Anonymous Scholar' : (authorName.trim() || user?.user_metadata?.full_name || 'Student Contributor'),
-          degree: isAnonymous ? 'Verified Student' : (degree.trim() || user?.user_metadata?.degree || 'Undergraduate Student'),
-          year: graduationYear,
-          avatar: isAnonymous
-            ? null
-            : (user?.user_metadata?.avatar_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80`),
-          id: user?.id || null,
-        },
-        file: activeFileObj,
-        rating: 5.0,
-        reviewsCount: 1,
-        downloads: 0,
-        views: 1,
-        uploadDate: new Date().toISOString().split('T')[0],
-        verified: true,
-        aiVerified: true,
-        aiVerificationReason: verification?.reason || `Verified match for ${category}.`,
-        aiVerificationWarning: activeWarning || verification?.warning || null,
-        aiEvaluator: verification?.evaluator || 'gemini-2.5-flash',
-        pagesContent: [
-          {
-            pageNumber: 1,
-            title: `${courseCode.toUpperCase()}: ${title}`,
-            excerpt: description.trim(),
-            keyTakeaway: 'Verified peer notes. High-yield definitions, examples, and formulas.',
-          },
-        ],
-      };
+      // CREATE NEW NOTE FLOW (Supports Batch Multiple PDFs for Same Subject/Course)
+      const totalFiles = selectedFiles.length;
+      const createdNotes = [];
+      const geminiKey =
+        localStorage.getItem('noteshare_gemini_api_key') ||
+        import.meta.env.VITE_GEMINI_API_KEY ||
+        '';
 
-      let finalNote = notePayload;
-      if (isSupabaseConfigured) {
-        setUploadStatusText('Permanently saving note in Supabase database...');
-        try {
-          const insertedNote = await insertNoteMetadata(notePayload, user);
-          if (insertedNote) {
-            insertedNote.aiVerified = true;
-            insertedNote.aiVerificationReason = verification?.reason;
-            insertedNote.aiVerificationWarning = activeWarning || verification?.warning || null;
-            insertedNote.aiEvaluator = verification?.evaluator;
-            finalNote = insertedNote;
-          }
-        } catch (dbErr) {
-          console.error('Fatal database insert failure:', dbErr);
-          setIsSubmitting(false);
-          setIsVerifyingAI(false);
-          setUploadStatusText('');
-          setErrors({
-            form: `Failed to save note to Supabase database: ${dbErr.message || 'Check database permissions and connection.'}`,
-          });
-          window.scrollTo({ top: 100, behavior: 'smooth' });
-          return;
+      for (let i = 0; i < totalFiles; i++) {
+        const fileItem = selectedFiles[i];
+        const fileIndex = i + 1;
+        const progressPrefix = totalFiles > 1 ? `[${fileIndex}/${totalFiles}] ` : '';
+
+        // Formulate individual note title
+        let finalNoteTitle = title.trim();
+        if (totalFiles > 1) {
+          finalNoteTitle = fileItem.customTitle?.trim() || `${title.trim()} (Part ${fileIndex})`;
+        } else if (fileItem.customTitle?.trim() && !title.trim()) {
+          finalNoteTitle = fileItem.customTitle.trim();
         }
+
+        let fileVerification = null;
+        let fileWarning = null;
+        let filePdfBase64 = '';
+
+        // 1. Run Gemini AI verification on PDF if file exists
+        if (fileItem.rawFile) {
+          setIsVerifyingAI(true);
+          setUploadStatusText(`${progressPrefix}Verifying "${fileItem.name}" with Gemini AI for ${category}...`);
+          try {
+            filePdfBase64 = await fileToBase64(fileItem.rawFile);
+            const verifyRes = await fetch('/api/verify-note', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(geminiKey ? { 'x-gemini-api-key': geminiKey } : {}),
+              },
+              body: JSON.stringify({
+                title: finalNoteTitle,
+                subject: category,
+                courseCode: courseCode.trim().toUpperCase(),
+                fileName: fileItem.name,
+                pdfBase64: filePdfBase64,
+                apiKey: geminiKey,
+              }),
+            });
+            fileVerification = await verifyRes.json();
+          } catch (verifyErr) {
+            console.warn(`Verification notice for ${fileItem.name}:`, verifyErr);
+          } finally {
+            setIsVerifyingAI(false);
+          }
+
+          // Handle Verification Results & Scanned/Image Document Fallbacks
+          if (fileVerification && fileVerification.isValid === false) {
+            const lowerReason = (fileVerification.reason || '').toLowerCase();
+            const isInconclusiveOrEmpty =
+              lowerReason.includes('empty') ||
+              lowerReason.includes('unreadable') ||
+              lowerReason.includes('no text') ||
+              lowerReason.includes('not enough text') ||
+              lowerReason.includes('inconclusive') ||
+              lowerReason.includes('cannot determine') ||
+              lowerReason.includes('unable to determine') ||
+              lowerReason.includes('scanned') ||
+              lowerReason.includes('handwritten');
+
+            if (isInconclusiveOrEmpty || fileItem.isImage) {
+              fileWarning = `Scanned or handwritten document detected in "${fileItem.name}". Accepted under ${courseCode.toUpperCase()} (${category}).`;
+              setAiVerificationWarning(fileWarning);
+            } else {
+              // Genuine topic mismatch
+              setIsSubmitting(false);
+              setUploadStatusText('');
+              setAiVerificationError(
+                `File "${fileItem.name}" rejected: ${fileVerification.reason || `Content does not match ${category}.`}`
+              );
+              window.scrollTo({ top: 100, behavior: 'smooth' });
+              return;
+            }
+          } else if (fileVerification?.warning) {
+            fileWarning = fileVerification.warning;
+            setAiVerificationWarning(fileWarning);
+          }
+        }
+
+        // 2. Upload file to Supabase Cloud Storage bucket (notes-files)
+        let cloudFileUrl = null;
+        if (isSupabaseConfigured && fileItem.rawFile) {
+          setUploadStatusText(`${progressPrefix}Uploading "${fileItem.name}" to cloud storage...`);
+          try {
+            const uploadRes = await uploadNoteAttachment(fileItem.rawFile, courseCode);
+            cloudFileUrl = uploadRes.publicUrl;
+          } catch (storageErr) {
+            console.warn('Storage upload fallback:', storageErr);
+          }
+        }
+
+        const actualPages = fileVerification?.pageCount || fileItem.pages || 1;
+        const fileFormat = fileItem.isImage
+          ? 'IMAGE'
+          : (fileItem.name.split('.').pop() || 'PDF').toUpperCase();
+
+        const fileObj = {
+          name: fileItem.name,
+          size: fileItem.size,
+          pages: actualPages,
+          format: fileFormat,
+          url: cloudFileUrl || filePdfBase64 || fileItem.previewUrl || null,
+          type: fileItem.type || 'application/pdf',
+        };
+
+        // 3. Build Note Metadata
+        const notePayload = {
+          id: `note-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          title: finalNoteTitle,
+          courseCode: courseCode.trim().toUpperCase(),
+          courseName: courseName.trim() || courseCode.trim().toUpperCase(),
+          category,
+          university: university.trim(),
+          universityCountry: 'Global',
+          academicLevel,
+          resourceType,
+          description: description.trim(),
+          tags: tags.length > 0 ? tags : ['StudyNotes'],
+          author: {
+            name: isAnonymous ? 'Anonymous Scholar' : (authorName.trim() || user?.user_metadata?.full_name || 'Student Contributor'),
+            degree: isAnonymous ? 'Verified Student' : (degree.trim() || user?.user_metadata?.degree || 'Undergraduate Student'),
+            year: graduationYear,
+            avatar: isAnonymous
+              ? null
+              : (user?.user_metadata?.avatar_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80`),
+            id: user?.id || null,
+          },
+          file: fileObj,
+          rating: 5.0,
+          reviewsCount: 1,
+          downloads: 0,
+          views: 1,
+          uploadDate: new Date().toISOString().split('T')[0],
+          verified: true,
+          aiVerified: true,
+          aiVerificationReason: fileVerification?.reason || `Verified match for ${category}.`,
+          aiVerificationWarning: fileWarning || fileVerification?.warning || null,
+          aiEvaluator: fileVerification?.evaluator || 'gemini-2.5-flash',
+          pagesContent: [
+            {
+              pageNumber: 1,
+              title: `${courseCode.toUpperCase()}: ${finalNoteTitle}`,
+              excerpt: description.trim(),
+              keyTakeaway: 'Verified peer notes. High-yield definitions, examples, and formulas.',
+            },
+          ],
+        };
+
+        let savedNote = notePayload;
+
+        // 4. Insert into Supabase
+        if (isSupabaseConfigured) {
+          setUploadStatusText(`${progressPrefix}Saving "${finalNoteTitle}" in database...`);
+          try {
+            const insertedNote = await insertNoteMetadata(notePayload, user);
+            if (insertedNote) {
+              insertedNote.aiVerified = true;
+              insertedNote.aiVerificationReason = fileVerification?.reason;
+              insertedNote.aiVerificationWarning = fileWarning || fileVerification?.warning || null;
+              insertedNote.aiEvaluator = fileVerification?.evaluator;
+              savedNote = insertedNote;
+            }
+          } catch (dbErr) {
+            console.error(`Database insert error for note ${fileIndex}:`, dbErr);
+            setIsSubmitting(false);
+            setUploadStatusText('');
+            setErrors({
+              form: `Failed to save "${finalNoteTitle}" to database: ${dbErr.message || 'Check database permissions.'}`,
+            });
+            window.scrollTo({ top: 100, behavior: 'smooth' });
+            return;
+          }
+        }
+
+        // Cache offline
+        cacheNoteOffline(savedNote, fileItem.rawFile || null).catch(console.warn);
+        createdNotes.push(savedNote);
       }
 
-      // Cache newly uploaded note in offline storage
-      cacheNoteOffline(finalNote, selectedFile?.rawFile || null).catch(console.warn);
-
-      // Success: show success message and redirect to notes dashboard
+      // Success: notify and redirect
       setIsSubmitting(false);
       setUploadStatusText('');
-      setSuccessNote(finalNote);
-      setUploadedNoteRecord(finalNote);
+      setSuccessNote({
+        title: totalFiles > 1 ? `${totalFiles} Notes for ${courseCode.trim().toUpperCase()}` : createdNotes[0]?.title,
+        courseCode: courseCode.trim().toUpperCase(),
+        category,
+        count: totalFiles,
+        notes: createdNotes,
+      });
+      setUploadedNoteRecord(createdNotes[0]);
       setIsSuccessRedirecting(true);
-      onUploadSuccess(finalNote, false /* isEdit */);
+      onUploadSuccess(createdNotes.length === 1 ? createdNotes[0] : createdNotes, false /* isEdit */);
 
       setTimeout(() => {
         onBackToHome();
@@ -564,11 +747,17 @@ export default function UploadPage({
           </span>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">
-            {isEditMode ? 'Note Updated Successfully!' : 'Notes Uploaded Successfully!'}
+            {isEditMode
+              ? 'Note Updated Successfully!'
+              : (successNote?.count > 1
+                  ? `${successNote.count} Notes Published Successfully!`
+                  : 'Notes Uploaded Successfully!')}
           </h2>
           <p className="text-slate-600 dark:text-gray-400 text-sm sm:text-base max-w-lg mx-auto mb-8">
             {isEditMode ? (
               <>Your changes and attachments for <span className="font-bold text-gray-900 dark:text-gray-100">{uploadedNoteRecord.courseCode}</span> were saved.</>
+            ) : successNote?.count > 1 ? (
+              <>Thank you for contributing to NoteShare! All <span className="font-bold text-indigo-600 dark:text-indigo-400">{successNote.count} notes</span> for <span className="font-bold text-gray-900 dark:text-gray-100">{uploadedNoteRecord.courseCode}</span> are now live for students around the world.</>
             ) : (
               <>Thank you for contributing to NoteShare! Your notes for <span className="font-bold text-gray-900 dark:text-gray-100">{uploadedNoteRecord.courseCode}</span> are now live for students around the world.</>
             )}
@@ -634,10 +823,12 @@ export default function UploadPage({
             <button
               onClick={() => {
                 setUploadedNoteRecord(null);
+                setSuccessNote(null);
                 setTitle('');
                 setCourseCode('');
                 setCourseName('');
                 setDescription('');
+                setSelectedFiles([]);
                 setSelectedFile(null);
                 setImagePreviewUrl(null);
                 setIntegrityAgreed(false);
@@ -1241,106 +1432,234 @@ export default function UploadPage({
               </div>
             </div>
 
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`min-h-[220px] flex flex-col items-center justify-center border-2 border-dashed rounded-3xl p-6 sm:p-8 text-center cursor-pointer transition-all select-none ${
-                isDragging
-                  ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/60 scale-[1.01]'
-                  : errors.file
-                  ? 'border-rose-300 dark:border-rose-800 bg-rose-50/30 dark:bg-rose-950/20'
-                  : 'border-slate-300 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 bg-slate-50/40 dark:bg-gray-800/40 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20'
-              }`}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
-                onChange={handleFileChange}
-                className="hidden"
-              />
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple={!isEditMode}
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+              onChange={handleFileChange}
+              className="hidden"
+            />
 
-              {selectedFile ? (
-                <div className="flex flex-col items-center">
-                  {isEditMode && (
+            {/* In Edit Mode */}
+            {isEditMode ? (
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`min-h-[180px] flex flex-col items-center justify-center border-2 border-dashed rounded-3xl p-6 sm:p-8 text-center cursor-pointer transition-all select-none ${
+                  isDragging
+                    ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/60 scale-[1.01]'
+                    : errors.file
+                    ? 'border-rose-300 dark:border-rose-800 bg-rose-50/30 dark:bg-rose-950/20'
+                    : 'border-slate-300 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 bg-slate-50/40 dark:bg-gray-800/40 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20'
+                }`}
+              >
+                {selectedFiles.length > 0 ? (
+                  <div className="flex flex-col items-center">
                     <span className="mb-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
                       New Replacement File (Will Overwrite Previous Attachment)
                     </span>
-                  )}
-                  {imagePreviewUrl ? (
-                    <div className="mb-3 relative group">
-                      <img
-                        src={imagePreviewUrl}
-                        alt="Attachment Preview"
-                        className="w-32 h-32 object-cover rounded-xl border border-slate-200 dark:border-gray-700 shadow-md"
-                      />
-                      <span className="absolute bottom-1 right-1 bg-black/70 text-white text-[9px] px-1 rounded font-mono">
-                        IMAGE
-                      </span>
+                    {imagePreviewUrl ? (
+                      <div className="mb-3 relative group">
+                        <img
+                          src={imagePreviewUrl}
+                          alt="Attachment Preview"
+                          className="w-32 h-32 object-cover rounded-xl border border-slate-200 dark:border-gray-700 shadow-md"
+                        />
+                        <span className="absolute bottom-1 right-1 bg-black/70 text-white text-[9px] px-1 rounded font-mono">
+                          IMAGE
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-3 border border-emerald-200 dark:border-emerald-800">
+                        <FileCheck className="w-7 h-7" />
+                      </div>
+                    )}
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-0.5">
+                      {selectedFiles[0].name}
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                      Size: {selectedFiles[0].size} • Type: {selectedFiles[0].type || 'Document'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearAllFiles();
+                      }}
+                      className="min-h-[44px] px-4 py-2 inline-flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+                    >
+                      Cancel replacement (keep original file)
+                    </button>
+                  </div>
+                ) : editingNote?.file ? (
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-3 border border-indigo-200 dark:border-indigo-800">
+                      <FileText className="w-7 h-7" />
                     </div>
-                  ) : (
-                    <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-3 border border-emerald-200 dark:border-emerald-800">
-                      <FileCheck className="w-7 h-7" />
+                    <span className="mb-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                      Current Attachment Preserved ({editingNote.file.format || 'PDF'})
+                    </span>
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-0.5">
+                      {editingNote.file.name}
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      {editingNote.file.size} • {editingNote.file.pages} pages
+                    </p>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+                      Click or drag a new PDF/image here to re-upload / replace attachment
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            ) : selectedFiles.length > 0 ? (
+              /* Multi-File Queue View for Batch Uploads */
+              <div className="space-y-4">
+                {/* Batch Header Toolbar */}
+                <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                      <Files className="w-5 h-5" />
                     </div>
-                  )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-indigo-950 dark:text-indigo-100">
+                          {selectedFiles.length} {selectedFiles.length === 1 ? 'Document Selected' : 'Documents Selected for this Course'}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-200/80 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
+                          Batch Mode
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-indigo-700 dark:text-indigo-300">
+                        Total Size: {(selectedFiles.reduce((acc, f) => acc + (f.rawFile?.size || 0), 0) / (1024 * 1024)).toFixed(1)} MB • ~{selectedFiles.reduce((acc, f) => acc + (f.pages || 1), 0)} estimated pages
+                      </p>
+                    </div>
+                  </div>
 
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-0.5">
-                    {selectedFile.name}
-                  </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                    Size: {selectedFile.size} • Type: {selectedFile.type || 'Document'}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFile(null);
-                      setImagePreviewUrl(null);
-                    }}
-                    className="min-h-[44px] px-4 py-2 inline-flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
-                  >
-                    {isEditMode ? 'Cancel replacement (keep original file)' : 'Remove and choose another file'}
-                  </button>
-                </div>
-              ) : isEditMode && editingNote?.file ? (
-                <div className="flex flex-col items-center">
-                  <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-3 border border-indigo-200 dark:border-indigo-800">
-                    <FileText className="w-7 h-7" />
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-xs font-semibold text-indigo-700 dark:text-indigo-300 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add More PDFs</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearAllFiles}
+                      className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Clear All</span>
+                    </button>
                   </div>
-                  <span className="mb-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                    Current Attachment Preserved ({editingNote.file.format || 'PDF'})
-                  </span>
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-0.5">
-                    {editingNote.file.name}
-                  </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                    {editingNote.file.size} • {editingNote.file.pages} pages
-                  </p>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
-                    Click or drag a new PDF/image here to re-upload / replace attachment
-                  </p>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-11 h-11 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
-                      <FileText className="w-5 h-5" />
+
+                {/* Queue of Selected Files */}
+                <div className="space-y-3">
+                  {selectedFiles.map((fileItem, idx) => (
+                    <div
+                      key={fileItem.id}
+                      className="p-4 rounded-2xl bg-white dark:bg-gray-800/90 border border-slate-200 dark:border-gray-700 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all hover:border-indigo-300 dark:hover:border-indigo-700"
+                    >
+                      <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1 w-full">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/60 mt-0.5 sm:mt-0">
+                          {fileItem.isImage ? <ImageIcon className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
+                              PDF #{idx + 1}
+                            </span>
+                            <span className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate max-w-[280px]" title={fileItem.name}>
+                              {fileItem.name}
+                            </span>
+                            <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                              • {fileItem.size} • ~{fileItem.pages} {fileItem.pages === 1 ? 'page' : 'pages'}
+                            </span>
+                          </div>
+
+                          {/* Editable Lecture/Note Title */}
+                          <div className="mt-2 flex items-center gap-2">
+                            <label className="text-[11px] font-bold text-gray-600 dark:text-gray-300 shrink-0">
+                              Note / Topic Title:
+                            </label>
+                            <input
+                              type="text"
+                              value={fileItem.customTitle}
+                              onChange={(e) => handleUpdateFileTitle(fileItem.id, e.target.value)}
+                              placeholder="e.g. Lecture 1: Binary Search Trees"
+                              className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50/70 dark:bg-gray-850 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(fileItem.id)}
+                        className="min-w-[36px] min-h-[36px] p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer shrink-0 self-end sm:self-center flex items-center justify-center"
+                        title={`Remove ${fileItem.name}`}
+                        aria-label="Remove document"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    <div className="w-11 h-11 bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center">
-                      <ImageIcon className="w-5 h-5" />
-                    </div>
+                  ))}
+                </div>
+
+                {/* Dropzone Footer To Add More */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-4 border-2 border-dashed border-slate-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 rounded-2xl flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Drop more PDFs here or click to add files to this course</span>
+                </div>
+              </div>
+            ) : (
+              /* Empty Initial Dropzone */
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`min-h-[220px] flex flex-col items-center justify-center border-2 border-dashed rounded-3xl p-6 sm:p-8 text-center cursor-pointer transition-all select-none ${
+                  isDragging
+                    ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/60 scale-[1.01]'
+                    : errors.file
+                    ? 'border-rose-300 dark:border-rose-800 bg-rose-50/30 dark:bg-rose-950/20'
+                    : 'border-slate-300 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 bg-slate-50/40 dark:bg-gray-800/40 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shadow-xs">
+                    <Files className="w-6 h-6" />
                   </div>
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                    Drag and drop your PDF or Image document here, or <span className="text-indigo-600 dark:text-indigo-400 hover:underline">browse files</span>
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Supports PDF, PNG, JPG, WEBP, DOCX (Max: 50MB)
-                  </p>
+                  <div className="w-12 h-12 bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center shadow-xs">
+                    <FileText className="w-6 h-6" />
+                  </div>
                 </div>
-              )}
-            </div>
+
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                  Drag and drop your PDF documents or images here, or <span className="text-indigo-600 dark:text-indigo-400 hover:underline">browse files</span>
+                </p>
+                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span>Batch Upload: Select and upload multiple PDFs at once for this course</span>
+                </div>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  Supports multiple PDF, PNG, JPG, WEBP, DOCX (Up to 50MB per file)
+                </p>
+              </div>
+            )}
 
             {errors.file && (
               <p className="mt-2 text-xs text-rose-500 dark:text-rose-400 flex items-center gap-1">
@@ -1491,7 +1810,11 @@ export default function UploadPage({
                 ) : (
                   <>
                     <UploadCloud className="w-4 h-4" />
-                    <span>Publish Note Resource</span>
+                    <span>
+                      {selectedFiles.length > 1
+                        ? `Publish ${selectedFiles.length} Course Notes`
+                        : 'Publish Note Resource'}
+                    </span>
                   </>
                 )}
               </button>

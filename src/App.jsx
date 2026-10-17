@@ -532,12 +532,18 @@ function NoteShareApp() {
         message: `Your changes to ${updatedOrNewNote.courseCode || 'the note'} were successfully saved.`,
       });
     } else {
-      setNotes((prev) => [updatedOrNewNote, ...prev]);
-      window.dispatchEvent(new CustomEvent('noteshare:notes-updated', { detail: { action: 'upload', note: updatedOrNewNote } }));
+      const incomingList = Array.isArray(updatedOrNewNote) ? updatedOrNewNote : [updatedOrNewNote];
+      setNotes((prev) => [...incomingList, ...prev]);
+      incomingList.forEach((n) => {
+        window.dispatchEvent(new CustomEvent('noteshare:notes-updated', { detail: { action: 'upload', note: n } }));
+      });
+      const firstNote = incomingList[0];
       setToast({
         type: 'success',
-        title: 'Resource Published!',
-        message: `Your note for ${updatedOrNewNote.courseCode} is now live in the global catalog.`,
+        title: incomingList.length > 1 ? `${incomingList.length} Notes Published!` : 'Resource Published!',
+        message: incomingList.length > 1
+          ? `Successfully published ${incomingList.length} notes for ${firstNote?.courseCode || 'your course'}.`
+          : `Your note for ${firstNote?.courseCode} is now live in the global catalog.`,
       });
     }
     setEditingNote(null);

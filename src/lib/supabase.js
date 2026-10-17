@@ -987,7 +987,7 @@ export async function uploadNoteAttachment(file, courseCode = 'GENERAL') {
     .replace(/[^a-zA-Z0-9_-]/g, '_')
     .slice(0, 32);
 
-  const uniqueFileName = `${Date.now()}_${cleanBaseName}.${fileExt}`;
+  const uniqueFileName = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${cleanBaseName}.${fileExt}`;
   const filePath = `${cleanCourse}/${uniqueFileName}`;
 
   // Upload to Supabase Storage bucket 'notes-files'

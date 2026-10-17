@@ -60,6 +60,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        mode: 'development',
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         runtimeCaching: [
           {
