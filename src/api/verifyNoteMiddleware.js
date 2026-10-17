@@ -23,13 +23,8 @@ export function verifyNoteMiddleware(req, res) {
     return;
   }
 
-  const chunks = [];
-  req.on('data', (chunk) => chunks.push(chunk));
-  req.on('end', async () => {
+  const processPayload = async (body) => {
     try {
-      const rawBody = Buffer.concat(chunks).toString('utf-8');
-      const body = JSON.parse(rawBody || '{}');
-
       const { title, subject, courseCode, pdfBase64, pdfText, fileName } = body;
 
       if (!title || !subject) {
@@ -72,7 +67,7 @@ export function verifyNoteMiddleware(req, res) {
       }
 
       // Step 2: Send extracted text with title & subject to Gemini API / Heuristic engine
-      const clientApiKey = req.headers['x-gemini-api-key'] || body.apiKey;
+      const clientApiKey = (req.headers && req.headers['x-gemini-api-key']) || body.apiKey;
       const verificationResult = await verifyNoteWithGemini({
         pdfText: extractedText,
         title,
@@ -105,6 +100,33 @@ export function verifyNoteMiddleware(req, res) {
           reason: `Verification server error: ${err.message}`,
         })
       );
+    }
+  };
+
+  // If req.body is already parsed (e.g. Vercel Serverless Function or Express with body parser)
+  if (req.body && typeof req.body === 'object') {
+    return processPayload(req.body);
+  } else if (typeof req.body === 'string' && req.body.trim()) {
+    try {
+      return processPayload(JSON.parse(req.body));
+    } catch {
+      return processPayload({});
+    }
+  }
+
+  // Otherwise buffer incoming stream (Connect/Vite middleware and native Node http)
+  const chunks = [];
+  req.on('data', (chunk) => chunks.push(chunk));
+  req.on('end', async () => {
+    try {
+      const rawBody = Buffer.concat(chunks).toString('utf-8');
+      const body = JSON.parse(rawBody || '{}');
+      await processPayload(body);
+    } catch (err) {
+      console.error('Body parsing error in verifyNoteMiddleware:', err);
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ isValid: false, reason: 'Invalid JSON request payload.' }));
     }
   });
 }
