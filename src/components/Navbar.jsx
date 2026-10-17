@@ -174,13 +174,13 @@ export default function Navbar({
             </div>
 
             {/* Desktop Navigation Links with Active State Highlighting */}
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 shrink min-w-0 overflow-x-auto scrollbar-none">
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 shrink-0">
               
               {/* Browse Notes */}
               <button
                 type="button"
                 onClick={handleNavigateHome}
-                className={`px-3 py-1.5 rounded-xl text-xs xl:text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   isBrowseActive
                     ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/70 dark:border-indigo-800/60 ring-2 ring-indigo-500/20 shadow-xs'
                     : 'text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-gray-800/80'
@@ -319,7 +319,7 @@ export default function Navbar({
                       <WifiOff className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                     )}
                   </span>
-                  <span className="hidden sm:inline font-semibold">
+                  <span className="hidden xl:inline font-semibold">
                     {isOnline ? 'Online' : 'Offline'}
                   </span>
                 </div>

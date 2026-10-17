@@ -334,13 +334,14 @@ export default function NotePreviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6 animate-fadeIn"
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4 md:p-6 animate-fadeIn"
       onClick={onClose}
     >
-      <div
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-6xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden flex flex-col max-h-[95vh] animate-scaleUp text-gray-900 dark:text-gray-100"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="min-h-full flex items-center justify-center">
+        <div
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-6xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-scaleUp text-gray-900 dark:text-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Modal Top Header with 44x44px touch targets */}
         <div className="px-4 sm:px-5 py-3.5 sm:py-4 bg-slate-900/95 dark:bg-gray-950/95 backdrop-blur-md text-white flex items-center justify-between gap-3 sm:gap-4 shrink-0 border-b border-slate-800 dark:border-gray-800">
           <div className="flex items-center gap-3 min-w-0">
@@ -966,5 +967,6 @@ export default function NotePreviewModal({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

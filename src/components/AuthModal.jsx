@@ -277,12 +277,13 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      {/* Form Background Container with High Contrast Against Page/Backdrop */}
-      <div
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden animate-scaleUp text-gray-900 dark:text-gray-100"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs p-4 animate-fadeIn">
+      <div className="min-h-full flex items-center justify-center">
+        {/* Form Background Container with High Contrast Against Page/Backdrop */}
+        <div
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden my-auto animate-scaleUp text-gray-900 dark:text-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header Banner */}
         <div className="p-6 bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 dark:from-gray-950 dark:via-indigo-950/80 dark:to-gray-950 text-white relative">
           <button
@@ -760,5 +761,6 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
         </form>
       </div>
     </div>
-  );
+  </div>
+);
 }

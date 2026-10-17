@@ -20,11 +20,12 @@ export default function BookmarksModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden flex flex-col max-h-[85vh] animate-scaleUp text-gray-900 dark:text-gray-100"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs p-4 animate-fadeIn">
+      <div className="min-h-full flex items-center justify-center">
+        <div
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden flex flex-col max-h-[85vh] my-auto animate-scaleUp text-gray-900 dark:text-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200/80 dark:border-gray-800 flex items-center justify-between bg-slate-50/80 dark:bg-gray-850/80 backdrop-blur-xs">
           <div className="flex items-center gap-2">
@@ -137,5 +138,6 @@ export default function BookmarksModal({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

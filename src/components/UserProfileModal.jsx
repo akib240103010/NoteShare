@@ -294,13 +294,14 @@ export default function UserProfileModal({ isOpen, onClose, onToast, notesCount:
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fadeIn"
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs p-3 sm:p-4 animate-fadeIn"
       onClick={onClose}
     >
-      <div
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden animate-scaleUp text-gray-900 dark:text-gray-100 my-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="min-h-full flex items-center justify-center">
+        <div
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden animate-scaleUp text-gray-900 dark:text-gray-100 my-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header Banner */}
         <div className="p-5 sm:p-6 bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 dark:from-gray-950 dark:via-indigo-950/80 dark:to-gray-950 text-white relative">
           <div className="flex items-center justify-between">
@@ -620,5 +621,6 @@ export default function UserProfileModal({ isOpen, onClose, onToast, notesCount:
         </form>
       </div>
     </div>
-  );
+  </div>
+);
 }

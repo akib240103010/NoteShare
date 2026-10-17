@@ -360,11 +360,12 @@ CREATE POLICY "Anyone upload files" ON storage.objects FOR INSERT WITH CHECK (bu
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden animate-scaleUp text-gray-900 dark:text-gray-100"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs p-4 animate-fadeIn">
+      <div className="min-h-full flex items-center justify-center">
+        <div
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200/90 dark:border-gray-800/80 overflow-hidden my-auto animate-scaleUp text-gray-900 dark:text-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="p-6 bg-slate-900 dark:bg-gray-950 text-white flex items-center justify-between border-b border-slate-800 dark:border-gray-800">
           <div className="flex items-center gap-3">
@@ -584,5 +585,6 @@ CREATE POLICY "Anyone upload files" ON storage.objects FOR INSERT WITH CHECK (bu
         </form>
       </div>
     </div>
-  );
+  </div>
+);
 }

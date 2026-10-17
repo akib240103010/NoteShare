@@ -142,7 +142,7 @@ export default function ThemeToggle({
       <div
         role="group"
         aria-label="Standard Theme Controls"
-        className="hidden sm:inline-flex items-center gap-0.5"
+        className="hidden xl:inline-flex items-center gap-0.5"
       >
         {standardThemes.map((opt) => {
           const Icon = opt.icon;
@@ -176,8 +176,8 @@ export default function ThemeToggle({
         })}
       </div>
 
-      {/* Standard Theme Dropdown on compact mobile viewports (< sm) */}
-      <div className="sm:hidden relative">
+      {/* Standard Theme Dropdown on compact viewports (< xl) */}
+      <div className="xl:hidden relative">
         <button
           type="button"
           onClick={() => setIsDropdownOpen((prev) => !prev)}

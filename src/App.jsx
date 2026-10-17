@@ -600,40 +600,37 @@ function NoteShareApp() {
       <AnimeBackground />
       
       {/* Navigation Bar */}
-      <div className="sticky top-0 z-50 w-full">
-        <Navbar
-          currentView={currentView}
-          setCurrentView={(view) => {
-            if (view !== 'upload' || currentView !== 'upload') {
-              setEditingNote(null);
-            }
-            setCurrentView(view);
-          }}
-          bookmarksCount={bookmarks.length}
-          isBookmarksOpen={isBookmarksOpen}
-          onOpenBookmarks={() => setIsBookmarksOpen(true)}
-          onOpenAuth={() => setIsAuthOpen(true)}
-          onOpenProfile={() => setIsProfileOpen(true)}
-          onOpenConfig={() => setIsConfigOpen(true)}
-          selectedCategory={selectedCategory}
-          onSelectCategory={(cat) => {
-            setSelectedCategory(cat);
-            if (currentView !== 'home') setCurrentView('home');
-            window.scrollTo({ top: 380, behavior: 'smooth' });
-          }}
-          onFocusSearch={() => {
-            if (currentView !== 'home') setCurrentView('home');
-            setTimeout(() => searchInputRef.current?.focus(), 100);
-          }}
-          onOfflineActionAttempt={(msg) => {
-            setToast({
-              type: 'info',
-              title: 'Offline Action Paused',
-              message: msg || 'This feature requires an active internet connection. You can continue browsing cached study notes.',
-            });
-          }}
-        />
-      </div>
+      <Navbar
+        currentView={currentView}
+        setCurrentView={(view) => {
+          if (view !== 'upload' || currentView !== 'upload') {
+            setEditingNote(null);
+          }
+          setCurrentView(view);
+        }}
+        bookmarksCount={bookmarks.length}
+        isBookmarksOpen={isBookmarksOpen}
+        onOpenBookmarks={() => setIsBookmarksOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenConfig={() => setIsConfigOpen(true)}
+        selectedCategory={selectedCategory}
+        onSelectCategory={(cat) => {
+          setSelectedCategory(cat);
+          if (currentView !== 'home') setCurrentView('home');
+        }}
+        onFocusSearch={() => {
+          if (currentView !== 'home') setCurrentView('home');
+          setTimeout(() => searchInputRef.current?.focus(), 100);
+        }}
+        onOfflineActionAttempt={(msg) => {
+          setToast({
+            type: 'info',
+            title: 'Offline Action Paused',
+            message: msg || 'This feature requires an active internet connection. You can continue browsing cached study notes.',
+          });
+        }}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 w-full relative z-10">
@@ -741,8 +738,10 @@ function NoteShareApp() {
         <Footer
           onSelectCategory={(cat) => {
             setSelectedCategory(cat);
-            if (currentView !== 'home') setCurrentView('home');
-            window.scrollTo({ top: 380, behavior: 'smooth' });
+            if (currentView !== 'home') {
+              setCurrentView('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           }}
           onGoToUpload={() => {
             setEditingNote(null);
