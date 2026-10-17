@@ -27,7 +27,7 @@ export default function BookmarksModal({
           onClick={(e) => e.stopPropagation()}
         >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200/80 dark:border-gray-800 flex items-center justify-between bg-slate-50/80 dark:bg-gray-850/80 backdrop-blur-xs">
+        <div className="px-6 py-4 border-b border-slate-200/80 dark:border-gray-800 flex items-center justify-between bg-slate-50/90 dark:bg-gray-950/80 backdrop-blur-xs">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center">
               <Bookmark className="w-4 h-4 fill-amber-500" />
@@ -128,7 +128,7 @@ export default function BookmarksModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 bg-slate-50 dark:bg-gray-850 border-t border-slate-200 dark:border-gray-800 flex justify-end">
+        <div className="px-6 py-3 bg-slate-50/90 dark:bg-gray-950/80 border-t border-slate-200 dark:border-gray-800 flex justify-end">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-750 transition-colors cursor-pointer"

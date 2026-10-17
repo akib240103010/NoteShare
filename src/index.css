@@ -4,6 +4,8 @@
 
 @theme {
   --color-gray-150: #eceef2;
+  --color-gray-750: #263342;
+  --color-gray-850: #17202e;
 }
 
 @layer base {

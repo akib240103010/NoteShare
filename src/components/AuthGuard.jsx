@@ -764,7 +764,7 @@ export default function AuthGuard({ children }) {
               </form>
 
               {/* Card Footer: Supabase Settings Option */}
-              <div className="px-6 py-3.5 bg-slate-50/80 dark:bg-gray-850/80 border-t border-slate-100 dark:border-gray-800 flex items-center justify-between text-xs text-slate-500 dark:text-gray-400">
+              <div className="px-6 py-3.5 bg-slate-50/90 dark:bg-gray-950/80 border-t border-slate-100 dark:border-gray-800 flex items-center justify-between text-xs text-slate-500 dark:text-gray-400">
                 <span className="flex items-center gap-1.5 text-[11px]">
                   <Database className="w-3.5 h-3.5 text-slate-400" />
                   <span>{isConfigured ? 'Live Supabase Cloud' : 'Local Demo Storage'}</span>

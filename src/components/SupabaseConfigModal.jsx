@@ -388,7 +388,7 @@ CREATE POLICY "Anyone upload files" ON storage.objects FOR INSERT WITH CHECK (bu
         </div>
 
         {/* Status Highlight Banner */}
-        <div className="p-6 border-b border-slate-100 dark:border-gray-800 bg-slate-50/70 dark:bg-gray-850">
+        <div className="p-6 border-b border-slate-100 dark:border-gray-800 bg-slate-50/90 dark:bg-gray-950/80">
           <div className="flex items-start gap-3">
             {isSupabaseConfigured ? (
               <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />

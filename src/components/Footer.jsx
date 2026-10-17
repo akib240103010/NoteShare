@@ -10,9 +10,9 @@ import {
 
 export default function Footer({ onSelectCategory, onGoToUpload }) {
   return (
-    <footer className="bg-white/80 dark:bg-gray-950/80 backdrop-blur-md text-slate-600 dark:text-gray-300 pt-16 pb-12 border-t border-slate-200/80 dark:border-gray-850 transition-colors duration-200">
+    <footer className="bg-white/80 dark:bg-gray-950/80 backdrop-blur-md text-slate-600 dark:text-gray-300 pt-16 pb-12 border-t border-slate-200/80 dark:border-gray-800 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-200/80 dark:border-gray-850">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-200/80 dark:border-gray-800">
           
           {/* Brand & Vision */}
           <div className="space-y-4 md:col-span-1">

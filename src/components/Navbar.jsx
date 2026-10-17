@@ -465,21 +465,21 @@ export default function Navbar({
         aria-label="Mobile Navigation Drawer"
       >
         {/* Drawer Header */}
-        <div className="p-4 border-b border-slate-100 dark:border-gray-800 flex items-center justify-between bg-slate-50/80 dark:bg-gray-850/80 backdrop-blur-xs">
+        <div className="p-4 border-b border-slate-200/80 dark:border-gray-800 flex items-center justify-between bg-slate-50/90 dark:bg-gray-950/80 backdrop-blur-xs">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-linear-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-xs">
               <GraduationCap className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-bold text-sm text-gray-900 dark:text-gray-100">NoteShare</span>
-              <span className="block text-[10px] text-slate-400 dark:text-gray-500">Student Scholar Menu</span>
+              <span className="font-bold text-sm text-gray-900 dark:text-white">NoteShare</span>
+              <span className="block text-[10px] text-slate-500 dark:text-gray-400">Student Scholar Menu</span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => setDrawerOpen(false)}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+            className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 dark:text-gray-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors cursor-pointer"
             aria-label="Close navigation drawer"
           >
             <X className="w-5 h-5" />
@@ -699,7 +699,7 @@ export default function Navbar({
         </div>
 
         {/* Drawer Footer: Theme Toggle & Info */}
-        <div className="p-4 border-t border-slate-100 dark:border-gray-800 bg-slate-50/70 dark:bg-gray-850/80 space-y-3">
+        <div className="p-4 border-t border-slate-200/80 dark:border-gray-800 bg-slate-50/90 dark:bg-gray-950/80 space-y-3">
           {/* Direct Anime Theme Studio Trigger in Mobile Drawer */}
           <button
             type="button"
@@ -707,10 +707,10 @@ export default function Navbar({
               openAnimePicker();
               setDrawerOpen(false);
             }}
-            className="w-full min-h-[44px] flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-pink-700 dark:text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-400/30 transition-all cursor-pointer hover:scale-[1.01] active:scale-98"
+            className="w-full min-h-[44px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-pink-700 dark:text-pink-300 bg-pink-500/10 dark:bg-pink-950/40 hover:bg-pink-500/20 dark:hover:bg-pink-900/50 border border-pink-300/50 dark:border-pink-800/60 transition-all cursor-pointer hover:scale-[1.01] active:scale-98"
           >
             <div className="flex items-center gap-2.5">
-              <Sparkles className="w-4 h-4 text-pink-500 animate-pulse" />
+              <Sparkles className="w-4 h-4 text-pink-500 dark:text-pink-400 animate-pulse" />
               <span>Anime Theme Studio</span>
             </div>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-pink-200/60 dark:bg-pink-900/60 text-pink-800 dark:text-pink-200">
@@ -719,7 +719,7 @@ export default function Navbar({
           </button>
 
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-bold text-slate-700 dark:text-gray-300">
+            <span className="text-xs font-bold text-slate-700 dark:text-gray-200">
               Theme Mode
             </span>
             <div className="flex items-center justify-between">
@@ -727,7 +727,7 @@ export default function Navbar({
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-gray-500 pt-1 border-t border-slate-200/60 dark:border-gray-800">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400 pt-1 border-t border-slate-200/60 dark:border-gray-800">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               NoteShare Verified
