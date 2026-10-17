@@ -24,6 +24,7 @@ import {
   FlaskConical,
   BookMarked,
   WifiOff,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -291,11 +292,12 @@ export default function Navbar({
             </nav>
 
             {/* Right Action Area - Streamlined, non-overflowing flex layout */}
+            {/* Right Action Area - Streamlined, non-overflowing flex layout */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               
               {/* Reactive Network Status Badge */}
               <div
-                className="relative group shrink-0"
+                className="hidden sm:block relative group shrink-0"
                 role="status"
                 aria-live="polite"
               >
@@ -333,13 +335,15 @@ export default function Navbar({
               </div>
 
               {/* Consolidated Theme & Anime Controls with Hover Tooltips */}
-              <ThemeToggle />
+              <div className="flex items-center">
+                <ThemeToggle />
+              </div>
 
               {/* Setup Backend Button with Vibrant Gradient Hover Effect */}
               <button
                 type="button"
                 onClick={onOpenConfig}
-                className={`inline-flex items-center gap-1.5 min-h-[40px] px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-105 shadow-xs hover:shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 border ${
+                className={`hidden md:inline-flex items-center gap-1.5 min-h-[40px] px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-105 shadow-xs hover:shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 border ${
                   isConfigured
                     ? 'bg-linear-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-emerald-300/80 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-900/50 dark:hover:to-teal-900/50'
                     : 'bg-linear-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/40 dark:via-purple-950/40 dark:to-pink-950/40 border-indigo-200/80 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 hover:border-indigo-400 hover:from-indigo-100 hover:to-purple-100'
@@ -403,12 +407,12 @@ export default function Navbar({
                 )}
               </div>
 
-              {/* Upload CTA Button with Vibrant Gradient Hover Effects */}
+              {/* Upload CTA Button (hidden on phone < sm, visible on tablets/desktops) */}
               <button
                 type="button"
                 onClick={handleNavigateUpload}
                 title={!isOnline ? 'Uploading disabled while offline' : 'Upload Study Notes'}
-                className={`relative inline-flex items-center gap-1.5 min-h-[40px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 active:scale-95 whitespace-nowrap ${
+                className={`hidden sm:inline-flex relative items-center gap-1.5 min-h-[40px] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 active:scale-95 whitespace-nowrap ${
                   !isOnline
                     ? 'bg-slate-200 dark:bg-gray-800 text-slate-500 dark:text-gray-400 border border-slate-300 dark:border-gray-700 opacity-80 cursor-not-allowed hover:scale-100 hover:shadow-none'
                     : currentView === 'upload'
@@ -421,15 +425,14 @@ export default function Navbar({
                 ) : (
                   <WifiOff className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                 )}
-                <span className="hidden sm:inline whitespace-nowrap">{!isOnline ? 'Upload (Offline)' : 'Upload Notes'}</span>
-                <span className="sm:hidden whitespace-nowrap">{!isOnline ? 'Offline' : 'Upload'}</span>
+                <span className="whitespace-nowrap">{!isOnline ? 'Upload (Offline)' : 'Upload Notes'}</span>
               </button>
 
               {/* Hamburger Menu Button with 44x44px minimum touch target */}
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
-                className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800 transition-all duration-200 active:scale-95 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 shrink-0 cursor-pointer"
+                className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-700 dark:text-gray-200 hover:text-slate-900 dark:hover:text-white bg-slate-100/90 dark:bg-gray-800/90 hover:bg-slate-200 dark:hover:bg-gray-700 transition-all duration-200 active:scale-95 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 shrink-0 cursor-pointer border border-slate-200/80 dark:border-gray-700/80 shadow-2xs"
                 aria-label="Open mobile navigation menu"
                 aria-expanded={drawerOpen}
               >
@@ -734,6 +737,96 @@ export default function Navbar({
         </div>
 
       </aside>
+
+      {/* ===================================================================== */}
+      {/* MOBILE BOTTOM TASKBAR (Visible on mobile/tablet viewports < lg)       */}
+      {/* ===================================================================== */}
+      <nav
+        aria-label="Mobile Bottom Taskbar"
+        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-gray-800/80 shadow-2xl px-2 py-1 safe-area-inset-bottom"
+      >
+        <div className="flex items-center justify-around max-w-lg mx-auto">
+          {/* 1. Browse / Home */}
+          <button
+            type="button"
+            onClick={handleNavigateHome}
+            className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              isBrowseActive
+                ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'
+            }`}
+          >
+            <BookOpen className={`w-5 h-5 ${isBrowseActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+            <span className="text-[10px] mt-0.5 tracking-tight">Browse</span>
+          </button>
+
+          {/* 2. Subjects / Categories */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              isCategoriesActive
+                ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'
+            }`}
+          >
+            <Layers className="w-5 h-5 stroke-2" />
+            <span className="text-[10px] mt-0.5 tracking-tight">Subjects</span>
+          </button>
+
+          {/* 3. Center Elevated Upload Note Button */}
+          <button
+            type="button"
+            onClick={handleNavigateUpload}
+            className="flex flex-col items-center justify-center -mt-5 group cursor-pointer"
+            title="Upload Note"
+          >
+            <div className="w-12 h-12 rounded-full bg-linear-to-tr from-indigo-600 via-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/40 group-active:scale-90 transition-transform">
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">Upload</span>
+          </button>
+
+          {/* 4. Saved Notes with Badge */}
+          <button
+            type="button"
+            onClick={onOpenBookmarks}
+            className={`relative flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+              isSavedActive
+                ? 'text-amber-600 dark:text-amber-400 font-bold'
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'
+            }`}
+          >
+            <Bookmark className={`w-5 h-5 ${isSavedActive ? 'stroke-[2.5] fill-amber-500/20' : 'stroke-2'}`} />
+            {bookmarksCount > 0 && (
+              <span className="absolute top-1 right-2 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-extrabold flex items-center justify-center shadow-xs">
+                {bookmarksCount > 9 ? '9+' : bookmarksCount}
+              </span>
+            )}
+            <span className="text-[10px] mt-0.5 tracking-tight">Saved</span>
+          </button>
+
+          {/* 5. Menu / Account Button */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-all cursor-pointer"
+          >
+            {user ? (
+              <div className="w-5 h-5 rounded-full overflow-hidden bg-linear-to-tr from-indigo-600 to-violet-600 text-white text-[9px] font-bold flex items-center justify-center ring-1 ring-indigo-400">
+                {(profile?.avatar_url || user.user_metadata?.avatar_url) ? (
+                  <img src={profile?.avatar_url || user.user_metadata?.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{(profile?.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}</span>
+                )}
+              </div>
+            ) : (
+              <Menu className="w-5 h-5 stroke-2" />
+            )}
+            <span className="text-[10px] mt-0.5 tracking-tight">{user ? 'Account' : 'Menu'}</span>
+          </button>
+        </div>
+      </nav>
     </>
   );
 }

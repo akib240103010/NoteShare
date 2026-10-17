@@ -639,7 +639,7 @@ function NoteShareApp() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full relative z-10">
+      <main className="flex-1 w-full relative z-10 pb-20 lg:pb-0">
         {currentView === 'upload' ? (
           /* Dedicated Upload Form Page */
           <UploadPage
