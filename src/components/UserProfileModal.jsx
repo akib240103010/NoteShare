@@ -357,30 +357,30 @@ export default function UserProfileModal({ isOpen, onClose, onToast, notesCount:
           )}
 
           {/* Prominent Notes Contribution Stat Counter */}
-          <div className="p-4 rounded-2xl bg-linear-to-r from-indigo-50/90 via-violet-50/60 to-indigo-50/40 dark:from-indigo-950/50 dark:via-purple-950/30 dark:to-indigo-950/40 border border-indigo-100/90 dark:border-indigo-900/60 flex items-center justify-between gap-3 shadow-2xs">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-11 h-11 rounded-2xl bg-linear-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-linear-to-r from-indigo-50/90 via-violet-50/60 to-indigo-50/40 dark:from-indigo-950/50 dark:via-purple-950/30 dark:to-indigo-950/40 border border-indigo-100/90 dark:border-indigo-900/60 flex items-center justify-between gap-2.5 sm:gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-linear-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
                 <BookOpen className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700 dark:text-gray-200 uppercase tracking-wider">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-bold text-slate-800 dark:text-gray-200 uppercase tracking-wider">
                     Notes Uploaded
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
-                    Live Counter
+                  <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+                    Live
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate">
-                  Total study documents contributed to the global library
+                  Total documents contributed
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <div className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-gray-800 border border-indigo-200/80 dark:border-indigo-800/80 shadow-xs flex items-center gap-2">
-                <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight">
+              <div className="px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl bg-white dark:bg-gray-800 border border-indigo-200/80 dark:border-indigo-800/80 shadow-xs flex items-center gap-1.5 sm:gap-2">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
+                <span className="text-lg sm:text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight">
                   {isCountLoading ? (
                     <span className="inline-block w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
@@ -435,12 +435,12 @@ export default function UserProfileModal({ isOpen, onClose, onToast, notesCount:
                 <span className="block text-[11px] text-slate-500 dark:text-gray-400 mb-1.5">
                   Choose a student avatar preset or keep your initials:
                 </span>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar sm:flex-wrap">
                   {/* Reset to Initials Option */}
                   <button
                     type="button"
                     onClick={() => setAvatarUrl('')}
-                    className={`w-9 h-9 rounded-xl border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                    className={`w-9 h-9 rounded-xl border flex items-center justify-center text-xs font-bold transition-all cursor-pointer shrink-0 ${
                       !avatarUrl
                         ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/30'
                         : 'border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:border-slate-400'

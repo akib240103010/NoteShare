@@ -25,9 +25,9 @@ export default function Toast({ toast, onClose }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full animate-bounce-in transition-all duration-300">
+    <div className="fixed top-4 left-4 right-4 sm:top-auto sm:bottom-6 sm:left-auto sm:right-6 sm:max-w-sm z-[60] pointer-events-none animate-bounce-in transition-all duration-300">
       <div
-        className={`flex items-start gap-3 p-4 rounded-xl border shadow-xl backdrop-blur-md ${
+        className={`pointer-events-auto flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border shadow-2xl backdrop-blur-md ${
           bgBorders[toast.type] || bgBorders.info
         }`}
       >
