@@ -184,11 +184,11 @@ export function AuthProvider({ children }) {
       // Specifically catch Email Confirmation Error
       if (parsed.type === 'email_not_confirmed') {
         const unconfirmedMessage =
-          'Please check your email for the verification link or disable Email Confirmations in your Supabase dashboard.';
+          'Email confirmation is not required on NoteShare. In your Supabase Dashboard under Authentication > Providers > Email, please turn "Confirm email" OFF for instant sign-in.';
         setUnconfirmedEmail(cleanEmail);
         setAuthNotification({
           type: 'warning',
-          title: 'Email Verification Required',
+          title: 'Instant Sign-In Setup',
           message: unconfirmedMessage,
           email: cleanEmail,
         });

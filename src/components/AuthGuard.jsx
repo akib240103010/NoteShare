@@ -51,9 +51,7 @@ export default function AuthGuard({ children }) {
     login,
     register,
     loginAsDemo,
-    resendConfirmation,
     resetPassword,
-    unconfirmedEmail,
     isConfigured,
   } = useAuth();
   const { isAnime, isDark, animeWallpaper } = useTheme();
@@ -70,8 +68,6 @@ export default function AuthGuard({ children }) {
 
   // Rate limit cooldown timer in seconds
   const [rateLimitTimer, setRateLimitTimer] = useState(0);
-  const [resendingEmail, setResendingEmail] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Password reset state
   const [resetLoading, setResetLoading] = useState(false);
@@ -83,13 +79,6 @@ export default function AuthGuard({ children }) {
   const [fullName, setFullName] = useState('');
   const [university, setUniversity] = useState('');
   const [degree, setDegree] = useState('');
-
-  // If there's an unconfirmed email from a previous attempt, sync it into input
-  useEffect(() => {
-    if (unconfirmedEmail && !email) {
-      setEmail(unconfirmedEmail);
-    }
-  }, [unconfirmedEmail]);
 
   // Active interval countdown for rate limit cooldown
   useEffect(() => {
@@ -224,32 +213,8 @@ export default function AuthGuard({ children }) {
     }
   };
 
-  const handleResendConfirmation = async () => {
-    const cleanEmail = (email || unconfirmedEmail || '').trim().toLowerCase();
-    if (!cleanEmail) {
-      setErrorMsg('Please enter your email address to resend the confirmation link.');
-      return;
-    }
-    setResendingEmail(true);
-    setResendSuccess(false);
-
-    try {
-      await resendConfirmation(cleanEmail);
-      setResendSuccess(true);
-      setTimeout(() => setResendSuccess(false), 5000);
-    } catch (err) {
-      const parsed = err.parsed || parseAuthError(err);
-      if (parsed.type === 'rate_limit') {
-        setRateLimitTimer(parsed.waitSeconds || 60);
-      }
-      setErrorMsg(parsed.message);
-    } finally {
-      setResendingEmail(false);
-    }
-  };
-
   const handleForgotPassword = async () => {
-    const cleanEmail = (email || unconfirmedEmail || '').trim().toLowerCase();
+    const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) {
       setErrorMsg('Please enter your email above to receive a password reset link.');
       return;
@@ -506,15 +471,14 @@ export default function AuthGuard({ children }) {
 
                 {/* Unconfirmed Email Special Action Banner */}
                 {(authErrorDetails?.type === 'email_not_confirmed' ||
-                  unconfirmedEmail ||
                   /email.*not.*confirmed/i.test(errorMsg)) && (
                   <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-2.5 animate-fadeIn">
                     <div className="flex items-start gap-2.5">
                       <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-sm block">Email Verification Required</span>
+                        <span className="font-bold text-sm block">Instant Sign-In Setup</span>
                         <p className="text-amber-800 dark:text-amber-300 mt-1 leading-relaxed">
-                          Please check your email for the verification link or disable Email Confirmations in your Supabase dashboard.
+                          Email verification codes are disabled on NoteShare to prevent broken redirect links. Turn OFF <strong>"Confirm email"</strong> in your Supabase Dashboard for instant access.
                         </p>
                       </div>
                     </div>
@@ -523,20 +487,14 @@ export default function AuthGuard({ children }) {
                     <div className="p-3.5 rounded-xl bg-white/90 dark:bg-gray-800/90 border border-amber-200/80 dark:border-amber-800/40 text-[11px] space-y-1.5">
                       <div className="flex items-center gap-1 font-bold text-amber-800 dark:text-amber-300">
                         <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                        <span>Why does the confirmation link show "site can't be reached"?</span>
+                        <span>How to enable instant login in Supabase:</span>
                       </div>
-                      <p className="text-slate-600 dark:text-gray-300 leading-relaxed">
-                        Supabase redirects confirmation links to <code className="bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded text-amber-800 dark:text-amber-300 font-mono">http://localhost:3000</code> by default instead of Vite port <code className="bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded text-amber-800 dark:text-amber-300 font-mono">5173</code>.
-                      </p>
                       <div className="text-slate-700 dark:text-gray-300 space-y-1 pt-0.5">
                         <p>
-                          <strong>1. Instant Verification:</strong> In your <strong>Supabase Dashboard &gt; Authentication &gt; Users</strong>, click the <strong>...</strong> menu next to your email and select <strong>"Confirm email"</strong>.
+                          <strong>1. Turn Off Email Confirmation:</strong> In <strong>Authentication &gt; Providers &gt; Email</strong>, toggle <strong>"Confirm email"</strong> to <strong>OFF</strong>. Users can log in immediately with their password.
                         </p>
                         <p>
-                          <strong>2. Disable Confirmation:</strong> In <strong>Authentication &gt; Providers &gt; Email</strong>, toggle <strong>"Confirm email"</strong> to <strong>OFF</strong> so you never need to wait for email links.
-                        </p>
-                        <p>
-                          <strong>3. Route Email Links:</strong> In <strong>Authentication &gt; URL Configuration</strong>, set <strong>Site URL</strong> to <code className="font-mono text-indigo-600 dark:text-indigo-400">http://localhost:5173</code>.
+                          <strong>2. Confirm Existing Account:</strong> In <strong>Authentication &gt; Users</strong>, click the <strong>...</strong> menu next to your email and select <strong>"Confirm email"</strong>.
                         </p>
                       </div>
                     </div>
@@ -544,12 +502,13 @@ export default function AuthGuard({ children }) {
                     <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                       <button
                         type="button"
-                        onClick={handleResendConfirmation}
-                        disabled={resendingEmail || rateLimitTimer > 0}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                        onClick={() => {
+                          setErrorMsg('');
+                          setAuthErrorDetails(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs"
                       >
-                        <Send className="w-3.5 h-3.5" />
-                        <span>{resendingEmail ? 'Sending...' : 'Resend Verification Email'}</span>
+                        <span>Try Signing In Again</span>
                       </button>
                       <button
                         type="button"
@@ -559,20 +518,12 @@ export default function AuthGuard({ children }) {
                         Supabase Config
                       </button>
                     </div>
-
-                    {resendSuccess && (
-                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        <span>Verification email sent! Check your inbox or spam folder.</span>
-                      </p>
-                    )}
                   </div>
                 )}
 
                 {/* Standard Feedback Alert (if not email confirmation error) */}
                 {errorMsg &&
                   authErrorDetails?.type !== 'email_not_confirmed' &&
-                  !unconfirmedEmail &&
                   !/email.*not.*confirmed/i.test(errorMsg) && (
                     <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-900/60 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-300 animate-fadeIn">
                       <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -631,33 +582,10 @@ export default function AuthGuard({ children }) {
                         </button>
                       </div>
 
-                      {/* Resend Verification Email Prompt */}
-                      <div className="pt-2 border-t border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between text-[11px]">
-                        <div className="flex items-center gap-1 text-slate-600 dark:text-gray-300">
-                          <Mail className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                          <span>Didn't receive verification?</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleResendConfirmation}
-                          disabled={resendingEmail || rateLimitTimer > 0}
-                          className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 underline cursor-pointer disabled:opacity-50"
-                        >
-                          {resendingEmail ? 'Sending...' : 'Resend Verification Email'}
-                        </button>
-                      </div>
-
                       {resetSuccess && (
                         <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                           <CheckCircle className="w-3.5 h-3.5" />
                           <span>Password reset email dispatched! Please check your inbox.</span>
-                        </p>
-                      )}
-
-                      {resendSuccess && (
-                        <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          <span>Verification email sent! Check your inbox or spam folder.</span>
                         </p>
                       )}
                     </div>

@@ -157,7 +157,7 @@ export function parseAuthError(err) {
 
   if (isUnconfirmed) {
     const unconfirmedMessage =
-      'Please check your email for the verification link or disable Email Confirmations in your Supabase dashboard.';
+      'Email verification is disabled on NoteShare to prevent broken redirect links. In your Supabase Dashboard under Authentication > Providers > Email, turn "Confirm email" OFF for instant sign-in. Or in Authentication > Users, click "..." and select "Confirm email".';
     return {
       type: 'email_not_confirmed',
       message: unconfirmedMessage,
