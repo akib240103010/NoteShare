@@ -142,7 +142,7 @@ export default function Navbar({
         {/* Offline Banner when disconnected */}
         <OfflineBanner />
 
-        <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="w-full px-3 sm:px-5 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-2">
             
             {/* Interactive Brand Logo with Scale-on-Hover & Click-to-Reset Home */}
@@ -166,9 +166,6 @@ export default function Navbar({
                       Global
                     </span>
                   </div>
-                  <p className="hidden 2xl:block text-[11px] text-slate-500 dark:text-gray-400 font-medium -mt-0.5 truncate group-hover:text-indigo-600/80 dark:group-hover:text-indigo-400/80 transition-colors">
-                    Student Knowledge Exchange
-                  </p>
                 </div>
               </button>
             </div>
@@ -365,19 +362,6 @@ export default function Navbar({
               <div className="hidden lg:flex items-center shrink-0">
                 {user ? (
                   <div className="flex items-center gap-1.5 sm:gap-2 pl-0.5">
-                    <button
-                      type="button"
-                      onClick={onOpenProfile}
-                      className="hidden 2xl:flex flex-col text-right cursor-pointer hover:opacity-80 transition-opacity text-left group"
-                      title="Manage Student Profile"
-                    >
-                      <span className="text-xs font-bold text-gray-900 dark:text-gray-100 leading-tight truncate max-w-[110px] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        {profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0]}
-                      </span>
-                      <span className="text-[10px] text-slate-500 dark:text-gray-400 truncate max-w-[110px]">
-                        {profile?.university || user.user_metadata?.university || 'Student Scholar'}
-                      </span>
-                    </button>
                     <button
                       type="button"
                       onClick={onOpenProfile}

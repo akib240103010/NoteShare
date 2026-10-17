@@ -138,46 +138,8 @@ export default function ThemeToggle({
       ref={dropdownRef}
       className={`relative inline-flex items-center gap-1 sm:gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-gray-800/90 border border-slate-200/80 dark:border-gray-700 shadow-2xs select-none ${className}`}
     >
-      {/* 1. Standard Theme Toggle Controls (Light, Dark, System) */}
-      <div
-        role="group"
-        aria-label="Standard Theme Controls"
-        className="hidden 2xl:inline-flex items-center gap-0.5"
-      >
-        {standardThemes.map((opt) => {
-          const Icon = opt.icon;
-          const isActive = !isAnime && theme === opt.id;
-
-          return (
-            <div key={opt.id} className="relative group">
-              <button
-                type="button"
-                onClick={() => setTheme(opt.id)}
-                aria-pressed={isActive}
-                aria-label={opt.title}
-                className={`min-h-[36px] min-w-[36px] p-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 ${
-                  isActive
-                    ? opt.activeBg
-                    : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-gray-700'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${opt.color}`} />
-              </button>
-
-              {/* Smooth Hover Tooltip */}
-              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:flex flex-col items-center z-50 pointer-events-none transition-all duration-200 animate-fadeIn">
-                <div className="w-1.5 h-1.5 bg-slate-900 dark:bg-gray-800 rotate-45 -mb-1" />
-                <div className="px-2 py-1 rounded-lg bg-slate-900 dark:bg-gray-800 text-white text-[10px] font-semibold shadow-lg whitespace-nowrap border border-slate-700/50">
-                  {opt.label} Mode
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Standard Theme Dropdown on compact viewports (< 2xl) */}
-      <div className="2xl:hidden relative">
+      {/* Standard Theme Dropdown (Compact & Universal across all viewports) */}
+      <div className="relative">
         <button
           type="button"
           onClick={() => setIsDropdownOpen((prev) => !prev)}
@@ -186,7 +148,7 @@ export default function ThemeToggle({
               ? 'bg-white dark:bg-gray-700 text-slate-800 dark:text-white shadow-xs'
               : 'text-slate-600 dark:text-gray-400 hover:bg-slate-200/60 dark:hover:bg-gray-700'
           }`}
-          title="Select standard theme (Light, Dark, Auto)"
+          title={`Theme: ${currentStandard.label} Mode (Click to switch)`}
           aria-label="Select standard theme"
         >
           <CurrentStandardIcon className={`w-4 h-4 ${currentStandard.color}`} />
