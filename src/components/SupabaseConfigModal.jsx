@@ -443,7 +443,7 @@ CREATE POLICY "Anyone upload files" ON storage.objects FOR INSERT WITH CHECK (bu
                 onBlur={handleUrlBlur}
                 onPaste={handleUrlPaste}
                 placeholder="https://xxxxxxxx.supabase.co"
-                className="w-full text-xs font-mono rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-850 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full text-xs font-mono rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
             <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
@@ -464,7 +464,7 @@ CREATE POLICY "Anyone upload files" ON storage.objects FOR INSERT WITH CHECK (bu
                 onBlur={handleKeyBlur}
                 onPaste={handleKeyPaste}
                 placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-                className="w-full text-xs font-mono rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-850 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full text-xs font-mono rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
             <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
@@ -488,7 +488,7 @@ CREATE POLICY "Anyone upload files" ON storage.objects FOR INSERT WITH CHECK (bu
                 value={geminiKeyInput}
                 onChange={(e) => setGeminiKeyInput(e.target.value)}
                 placeholder="AIzaSy... (or set GEMINI_API_KEY in .env)"
-                className="w-full text-xs font-mono rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-850 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full text-xs font-mono rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
             </div>
             <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
@@ -507,7 +507,7 @@ CREATE POLICY "Anyone upload files" ON storage.objects FOR INSERT WITH CHECK (bu
               <button
                 type="button"
                 onClick={handleCopySql}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 hover:bg-slate-100 dark:hover:bg-gray-650 text-xs font-semibold text-slate-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 hover:bg-slate-100 dark:hover:bg-gray-600 text-xs font-semibold text-slate-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
               >
                 {copiedSql ? (
                   <>

@@ -137,7 +137,7 @@ export default function AnimeWallpaperModal() {
         <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1">
           
           {/* Mode Switch Notice */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-gray-850 dark:bg-gray-900/90 border border-gray-800 text-xs text-gray-300">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-gray-900 border border-gray-800 text-xs text-gray-300">
             <div className="flex items-center gap-2">
               <Palette className="w-4 h-4 text-pink-400 shrink-0" />
               <span>
@@ -181,7 +181,7 @@ export default function AnimeWallpaperModal() {
                   <div
                     key={wp.id}
                     onClick={() => handleSelectWallpaper(wp.url)}
-                    className={`group relative rounded-2xl overflow-hidden border-2 transition-all cursor-pointer flex flex-col bg-gray-850 dark:bg-gray-900 text-left ${
+                    className={`group relative rounded-2xl overflow-hidden border-2 transition-all cursor-pointer flex flex-col bg-gray-900 text-left ${
                       isSelected
                         ? 'border-pink-500 ring-4 ring-pink-500/20 shadow-lg shadow-pink-500/10 scale-[1.01]'
                         : 'border-gray-800 hover:border-pink-500/60 hover:shadow-md'
@@ -220,14 +220,14 @@ export default function AnimeWallpaperModal() {
 
                       {/* Title on Image */}
                       <div className="absolute bottom-2 left-2 right-2">
-                        <h5 className="text-xs font-medium text-white truncate drop-shadow-sm">
+                        <h5 className="text-xs font-medium text-white drop-shadow-sm">
                           {wp.name}
                         </h5>
                       </div>
                     </div>
 
                     {/* Card Info */}
-                    <div className="p-3 flex-1 flex flex-col justify-between bg-gray-850 dark:bg-gray-900 border-t border-gray-800">
+                    <div className="p-3 flex-1 flex flex-col justify-between bg-gray-900 border-t border-gray-800">
                       <p className="text-[11px] text-gray-300 dark:text-gray-400 line-clamp-2 leading-relaxed">
                         {wp.description}
                       </p>
@@ -248,7 +248,7 @@ export default function AnimeWallpaperModal() {
           </div>
 
           {/* Section 2: Custom Wallpaper URL Input */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-gray-850 dark:bg-gray-900/90 border border-gray-800">
+          <div className="p-4 sm:p-5 rounded-2xl bg-gray-900 border border-gray-800">
             <div className="flex items-center gap-2 mb-2">
               <ExternalLink className="w-4 h-4 text-purple-400" />
               <h4 className="text-sm font-bold text-white">
@@ -277,7 +277,7 @@ export default function AnimeWallpaperModal() {
                     <button
                       type="button"
                       onClick={() => setPreviewCustom(!previewCustom)}
-                      className="min-h-[44px] px-3.5 py-2 rounded-xl border border-gray-700 bg-gray-800 hover:bg-gray-750 text-gray-200 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                      className="min-h-[44px] px-3.5 py-2 rounded-xl border border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Eye className="w-4 h-4" />
                       <span>{previewCustom ? 'Hide Preview' : 'Preview'}</span>

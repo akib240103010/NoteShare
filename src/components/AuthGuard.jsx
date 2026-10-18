@@ -268,7 +268,7 @@ export default function AuthGuard({ children }) {
           <button
             type="button"
             onClick={() => setIsConfigOpen(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors cursor-pointer bg-slate-50 dark:bg-gray-850 hover:bg-slate-100 dark:hover:bg-gray-800 border-slate-200 dark:border-gray-750 text-slate-600 dark:text-gray-300"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors cursor-pointer bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300"
             title="Supabase Backend Configuration"
           >
             <span

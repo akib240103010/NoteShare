@@ -527,7 +527,7 @@ export default function NotePreviewModal({
                   type="button"
                   onClick={handleZoomOut}
                   disabled={zoomScale <= 0.6}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   title="Zoom Out (-)"
                   aria-label="Zoom Out"
                 >
@@ -538,7 +538,7 @@ export default function NotePreviewModal({
                 <button
                   type="button"
                   onClick={handleResetZoom}
-                  className="min-h-[44px] px-2.5 rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-800 dark:text-gray-200 border border-slate-200 dark:border-gray-700 font-mono text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                  className="min-h-[44px] px-2.5 rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-800 dark:text-gray-200 border border-slate-200 dark:border-gray-700 font-mono text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
                   title="Reset Zoom to 100% (Press 0)"
                   aria-label="Reset Zoom"
                 >
@@ -551,7 +551,7 @@ export default function NotePreviewModal({
                   type="button"
                   onClick={handleZoomIn}
                   disabled={zoomScale >= 2.5}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   title="Zoom In (+)"
                   aria-label="Zoom In"
                 >
@@ -565,7 +565,7 @@ export default function NotePreviewModal({
                   className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl border transition-colors cursor-pointer ${
                     isFullscreen
                       ? 'bg-indigo-600 text-white border-indigo-600'
-                      : 'bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-200 border-slate-200 dark:border-gray-700'
+                      : 'bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border-slate-200 dark:border-gray-700'
                   }`}
                   title={isFullscreen ? 'Exit Fullscreen' : 'View Fullscreen'}
                   aria-label={isFullscreen ? 'Exit Fullscreen' : 'View Fullscreen'}
@@ -718,7 +718,7 @@ export default function NotePreviewModal({
                     type="button"
                     disabled={activePageIndex === 0}
                     onClick={() => setActivePageIndex(0)}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
                     title="First Page"
                     aria-label="First Page"
                   >
@@ -730,7 +730,7 @@ export default function NotePreviewModal({
                     type="button"
                     disabled={activePageIndex === 0}
                     onClick={() => setActivePageIndex((prev) => Math.max(0, prev - 1))}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
                     title="Previous Page (Left Arrow)"
                     aria-label="Previous Page"
                   >
@@ -758,7 +758,7 @@ export default function NotePreviewModal({
                     type="button"
                     disabled={activePageIndex === pages.length - 1}
                     onClick={() => setActivePageIndex((prev) => Math.min(pages.length - 1, prev + 1))}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
                     title="Next Page (Right Arrow)"
                     aria-label="Next Page"
                   >
@@ -770,7 +770,7 @@ export default function NotePreviewModal({
                     type="button"
                     disabled={activePageIndex === pages.length - 1}
                     onClick={() => setActivePageIndex(pages.length - 1)}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
                     title="Last Page"
                     aria-label="Last Page"
                   >
@@ -839,7 +839,7 @@ export default function NotePreviewModal({
                   className={`min-h-[44px] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-semibold text-xs border transition-all cursor-pointer ${
                     hasUpvoted
                       ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 shadow-xs'
-                      : 'bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-750 border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-200'
+                      : 'bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-200'
                   }`}
                   aria-label={hasUpvoted ? 'Upvoted note' : 'Mark note helpful'}
                 >
@@ -944,7 +944,7 @@ export default function NotePreviewModal({
                   className={`min-h-[44px] flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                     isBookmarked
                       ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300'
-                      : 'bg-slate-50 dark:bg-gray-800 border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-750'
+                      : 'bg-slate-50 dark:bg-gray-800 border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700'
                   }`}
                   title={isBookmarked ? 'Remove Bookmark' : 'Save to Bookmarks'}
                 >
@@ -955,7 +955,7 @@ export default function NotePreviewModal({
                 <button
                   type="button"
                   onClick={() => onShare(note)}
-                  className="min-h-[44px] flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-750 text-slate-700 dark:text-gray-300 text-xs font-semibold transition-all cursor-pointer"
+                  className="min-h-[44px] flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-300 text-xs font-semibold transition-all cursor-pointer"
                   title="Share Link"
                 >
                   <Share2 className="w-3.5 h-3.5" />

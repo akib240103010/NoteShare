@@ -100,7 +100,7 @@ export default function BookmarksModal({
                       onPreview(note);
                       onClose();
                     }}
-                    className="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-300 transition-colors cursor-pointer"
+                    className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-300 transition-colors cursor-pointer"
                     title="Preview Note"
                   >
                     <Eye className="w-4 h-4" />
@@ -108,7 +108,7 @@ export default function BookmarksModal({
 
                   <button
                     onClick={() => onDownload(note)}
-                    className="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-gray-700 text-indigo-600 dark:text-indigo-400 transition-colors cursor-pointer"
+                    className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-gray-700 text-indigo-600 dark:text-indigo-400 transition-colors cursor-pointer"
                     title="Download Note"
                   >
                     <Download className="w-4 h-4" />
@@ -116,7 +116,7 @@ export default function BookmarksModal({
 
                   <button
                     onClick={() => onRemoveBookmark(note.id)}
-                    className="p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-500 transition-colors cursor-pointer"
+                    className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-500 transition-colors cursor-pointer"
                     title="Remove Bookmark"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -131,7 +131,7 @@ export default function BookmarksModal({
         <div className="px-6 py-3 bg-slate-50/90 dark:bg-gray-950/80 border-t border-slate-200 dark:border-gray-800 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-750 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
           >
             Close
           </button>

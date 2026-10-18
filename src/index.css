@@ -122,4 +122,6 @@
 /* iOS Safe Area Padding for Mobile Bottom Bar */
 .safe-area-inset-bottom {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  padding-left: max(0.5rem, env(safe-area-inset-left));
+  padding-right: max(0.5rem, env(safe-area-inset-right));
 }

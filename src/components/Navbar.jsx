@@ -185,7 +185,7 @@ export default function Navbar({
                 }`}
               >
                 <BookOpen className={`w-4 h-4 shrink-0 ${isBrowseActive ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
-                <span>Browse Notes</span>
+                <span>Browse</span><span className="hidden xl:inline"> Notes</span>
                 {isBrowseActive && (
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0" />
                 )}
@@ -204,7 +204,7 @@ export default function Navbar({
                   aria-expanded={categoriesDropdownOpen}
                 >
                   <Layers className={`w-4 h-4 shrink-0 ${isCategoriesActive ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
-                  <span className="truncate max-w-[110px] xl:max-w-[140px]">
+                  <span className="truncate max-w-[95px] xl:max-w-[140px]">
                     {selectedCategory !== 'All Categories' ? selectedCategory : 'Categories'}
                   </span>
                   <ChevronDown
@@ -343,7 +343,7 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={onOpenConfig}
-                className={`hidden md:inline-flex items-center gap-1.5 min-h-[40px] px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-105 shadow-xs hover:shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 border ${
+                className={`hidden xl:inline-flex items-center gap-1.5 min-h-[40px] px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-105 shadow-xs hover:shadow-md hover:shadow-indigo-500/25 cursor-pointer shrink-0 border ${
                   isConfigured
                     ? 'bg-linear-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-emerald-300/80 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-900/50 dark:hover:to-teal-900/50'
                     : 'bg-linear-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/40 dark:via-purple-950/40 dark:to-pink-950/40 border-indigo-200/80 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 hover:border-indigo-400 hover:from-indigo-100 hover:to-purple-100'
@@ -745,53 +745,53 @@ export default function Navbar({
         aria-label="Mobile Bottom Taskbar"
         className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-gray-800/80 shadow-2xl px-2 py-1 safe-area-inset-bottom"
       >
-        <div className="flex items-center justify-around max-w-lg mx-auto">
+        <div className="flex items-center justify-around max-w-lg mx-auto w-full">
           {/* 1. Browse / Home */}
           <button
             type="button"
             onClick={handleNavigateHome}
-            className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 min-w-0 max-w-[72px] flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition-all cursor-pointer ${
               isBrowseActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-bold'
                 : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'
             }`}
           >
             <BookOpen className={`w-5 h-5 ${isBrowseActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-            <span className="text-[10px] mt-0.5 tracking-tight">Browse</span>
+            <span className="text-[10px] mt-0.5 tracking-tight truncate w-full text-center">Browse</span>
           </button>
 
           {/* 2. Subjects / Categories */}
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 min-w-0 max-w-[72px] flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition-all cursor-pointer ${
               isCategoriesActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-bold'
                 : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'
             }`}
           >
             <Layers className="w-5 h-5 stroke-2" />
-            <span className="text-[10px] mt-0.5 tracking-tight">Subjects</span>
+            <span className="text-[10px] mt-0.5 tracking-tight truncate w-full text-center">Subjects</span>
           </button>
 
           {/* 3. Center Elevated Upload Note Button */}
           <button
             type="button"
             onClick={handleNavigateUpload}
-            className="flex flex-col items-center justify-center -mt-5 group cursor-pointer"
+            className="flex-1 min-w-0 max-w-[72px] flex flex-col items-center justify-center -mt-5 group cursor-pointer"
             title="Upload Note"
           >
             <div className="w-12 h-12 rounded-full bg-linear-to-tr from-indigo-600 via-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/40 group-active:scale-90 transition-transform">
               <Plus className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">Upload</span>
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 truncate w-full text-center">Upload</span>
           </button>
 
           {/* 4. Saved Notes with Badge */}
           <button
             type="button"
             onClick={onOpenBookmarks}
-            className={`relative flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+            className={`relative flex-1 min-w-0 max-w-[72px] flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition-all cursor-pointer ${
               isSavedActive
                 ? 'text-amber-600 dark:text-amber-400 font-bold'
                 : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'
@@ -803,14 +803,14 @@ export default function Navbar({
                 {bookmarksCount > 9 ? '9+' : bookmarksCount}
               </span>
             )}
-            <span className="text-[10px] mt-0.5 tracking-tight">Saved</span>
+            <span className="text-[10px] mt-0.5 tracking-tight truncate w-full text-center">Saved</span>
           </button>
 
           {/* 5. Menu / Account Button */}
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            className="flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 px-1.5 rounded-xl text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-all cursor-pointer"
+            className="flex-1 min-w-0 max-w-[72px] flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-all cursor-pointer"
           >
             {user ? (
               <div className="w-5 h-5 rounded-full overflow-hidden bg-linear-to-tr from-indigo-600 to-violet-600 text-white text-[9px] font-bold flex items-center justify-center ring-1 ring-indigo-400">
@@ -823,7 +823,7 @@ export default function Navbar({
             ) : (
               <Menu className="w-5 h-5 stroke-2" />
             )}
-            <span className="text-[10px] mt-0.5 tracking-tight">{user ? 'Account' : 'Menu'}</span>
+            <span className="text-[10px] mt-0.5 tracking-tight truncate w-full text-center">{user ? 'Account' : 'Menu'}</span>
           </button>
         </div>
       </nav>

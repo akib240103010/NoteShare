@@ -577,7 +577,7 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
                       value={university}
                       onChange={(e) => setUniversity(e.target.value)}
                       placeholder="e.g. Stanford"
-                      className="w-full min-h-[44px] text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50/80 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-850 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors"
+                      className="w-full min-h-[44px] text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-gray-700 pl-9 pr-3 py-2.5 bg-slate-50/80 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors"
                     />
                   </div>
                 </div>
@@ -591,7 +591,7 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
                     value={degree}
                     onChange={(e) => setDegree(e.target.value)}
                     placeholder="e.g. CS & Math"
-                    className="w-full min-h-[44px] text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-gray-700 px-3.5 py-2.5 bg-slate-50/80 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-850 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors"
+                    className="w-full min-h-[44px] text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-gray-700 px-3.5 py-2.5 bg-slate-50/80 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors"
                   />
                 </div>
               </div>

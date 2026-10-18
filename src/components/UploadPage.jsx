@@ -766,7 +766,7 @@ export default function UploadPage({
           {/* Uploaded Summary Card */}
           <div className="bg-slate-50 dark:bg-gray-800/60 border border-slate-200 dark:border-gray-700 rounded-2xl p-5 text-left mb-8 max-w-lg mx-auto">
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded-md font-mono text-xs font-bold bg-slate-900 dark:bg-gray-800 text-white dark:text-gray-100 border border-transparent dark:border-gray-750">
+              <span className="px-2 py-0.5 rounded-md font-mono text-xs font-bold bg-slate-900 dark:bg-gray-800 text-white dark:text-gray-100 border border-transparent dark:border-gray-700">
                 {uploadedNoteRecord.courseCode}
               </span>
               <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-800">
@@ -1054,7 +1054,7 @@ export default function UploadPage({
                   </h3>
 
                   {/* AI Reason Callout */}
-                  <div className="mt-3 p-4 rounded-2xl bg-white dark:bg-gray-850 border-2 border-rose-200 dark:border-rose-800/80 shadow-2xs">
+                  <div className="mt-3 p-4 rounded-2xl bg-white dark:bg-gray-800 border-2 border-rose-200 dark:border-rose-800/80 shadow-2xs">
                     <div className="text-[11px] uppercase tracking-wider font-bold text-rose-500 dark:text-rose-400 mb-1 flex items-center gap-1.5">
                       <Bot className="w-3.5 h-3.5" />
                       AI Evaluator Reason:
@@ -1070,15 +1070,15 @@ export default function UploadPage({
                       Please correct one of the following to proceed:
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-rose-800 dark:text-rose-300">
-                      <div className="p-3 rounded-2xl bg-white/80 dark:bg-gray-850 border border-rose-200/70 dark:border-rose-800/70">
+                      <div className="p-3 rounded-2xl bg-white/80 dark:bg-gray-800 border border-rose-200/70 dark:border-rose-800/70">
                         <span className="font-bold text-rose-900 dark:text-rose-100 block mb-1">1. Update Subject</span>
                         Change the <strong>Subject / Category</strong> dropdown below to match the topic detected in your PDF.
                       </div>
-                      <div className="p-3 rounded-2xl bg-white/80 dark:bg-gray-850 border border-rose-200/70 dark:border-rose-800/70">
+                      <div className="p-3 rounded-2xl bg-white/80 dark:bg-gray-800 border border-rose-200/70 dark:border-rose-800/70">
                         <span className="font-bold text-rose-900 dark:text-rose-100 block mb-1">2. Adjust Note Title</span>
                         Ensure your <strong>Note Title</strong> accurately describes your study material.
                       </div>
-                      <div className="p-3 rounded-2xl bg-white/80 dark:bg-gray-850 border border-rose-200/70 dark:border-rose-800/70">
+                      <div className="p-3 rounded-2xl bg-white/80 dark:bg-gray-800 border border-rose-200/70 dark:border-rose-800/70">
                         <span className="font-bold text-rose-900 dark:text-rose-100 block mb-1">3. Or Re-upload File</span>
                         Upload a different PDF document that covers <strong>{category}</strong>.
                       </div>
@@ -1593,7 +1593,7 @@ export default function UploadPage({
                               value={fileItem.customTitle}
                               onChange={(e) => handleUpdateFileTitle(fileItem.id, e.target.value)}
                               placeholder="e.g. Lecture 1: Binary Search Trees"
-                              className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50/70 dark:bg-gray-850 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+                              className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50/70 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
                             />
                           </div>
                         </div>

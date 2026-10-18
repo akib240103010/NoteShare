@@ -241,7 +241,7 @@ export default function AnimeThemePicker({
       <div className="p-4 sm:p-5 overflow-y-auto space-y-5 flex-1">
         
         {/* 'Default Theme' Reset Section */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-850 dark:bg-gray-900/90 border border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-900 border border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
               <RotateCcw className="w-4 h-4" />
@@ -267,7 +267,7 @@ export default function AnimeThemePicker({
               className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
                 !isAnime && theme === 'system'
                   ? 'bg-indigo-600 text-white ring-2 ring-indigo-400/40'
-                  : 'bg-gray-800 hover:bg-gray-750 text-gray-200 hover:text-white border border-gray-700'
+                  : 'bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white border border-gray-700'
               }`}
               title="Reset to default system theme (Auto)"
             >
@@ -282,7 +282,7 @@ export default function AnimeThemePicker({
               className={`min-h-[44px] min-w-[44px] p-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center cursor-pointer ${
                 !isAnime && theme === 'dark'
                   ? 'bg-indigo-600 text-white ring-2 ring-indigo-400/40 border border-indigo-500'
-                  : 'bg-gray-800 hover:bg-gray-750 text-gray-300 hover:text-white border border-gray-700'
+                  : 'bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700'
               }`}
               title="Switch to Solid Dark"
               aria-label="Switch to Solid Dark"
@@ -297,7 +297,7 @@ export default function AnimeThemePicker({
               className={`min-h-[44px] min-w-[44px] p-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center cursor-pointer ${
                 !isAnime && theme === 'light'
                   ? 'bg-amber-500 text-white ring-2 ring-amber-400/40 border border-amber-400'
-                  : 'bg-gray-800 hover:bg-gray-750 text-amber-400 hover:text-amber-300 border border-gray-700'
+                  : 'bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-gray-700'
               }`}
               title="Switch to Solid Light"
               aria-label="Switch to Solid Light"
@@ -328,7 +328,7 @@ export default function AnimeThemePicker({
                   key={wp.id}
                   type="button"
                   onClick={() => handleSelectWallpaper(wp)}
-                  className={`group relative rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-pink-500 flex flex-col bg-gray-850 dark:bg-gray-900 ${
+                  className={`group relative rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-pink-500 flex flex-col bg-gray-900 ${
                     isSelected
                       ? 'border-pink-500 ring-2 ring-pink-500/40 shadow-lg shadow-pink-500/20 scale-[1.02]'
                       : 'border-gray-800 hover:border-pink-400/60 dark:hover:border-pink-500/60 hover:shadow-md hover:scale-[1.01]'
@@ -371,7 +371,7 @@ export default function AnimeThemePicker({
                   </div>
 
                   {/* Card Info & Subtitles */}
-                  <div className="p-2.5 flex-1 flex flex-col justify-between bg-gray-850 dark:bg-gray-900 border-t border-gray-800">
+                  <div className="p-2.5 flex-1 flex flex-col justify-between bg-gray-900 border-t border-gray-800">
                     <div>
                       <h4 className="text-xs font-medium text-white truncate group-hover:text-pink-300 transition-colors">
                         {wp.name}
