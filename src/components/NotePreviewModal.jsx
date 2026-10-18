@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useNetwork } from '../context/NetworkContext';
 import { cacheNoteOffline, getCachedNoteFile, getCachedNoteFileUrl } from '../lib/offlineStorage';
+import PdfDocumentViewer from './PdfDocumentViewer';
 
 /**
  * Converts a base64 data string (or data:application/pdf URI) into a browser Blob URL
@@ -522,41 +523,45 @@ export default function NotePreviewModal({
 
               {/* Center / Right Side: Responsive Zoom Controls (44x44px touch targets) */}
               <div className="flex items-center gap-1 sm:gap-1.5 ml-auto">
-                {/* Zoom Out Button */}
-                <button
-                  type="button"
-                  onClick={handleZoomOut}
-                  disabled={zoomScale <= 0.6}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                  title="Zoom Out (-)"
-                  aria-label="Zoom Out"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
+                {(viewType === 'reader' || isImageAttachment) && (
+                  <>
+                    {/* Zoom Out Button */}
+                    <button
+                      type="button"
+                      onClick={handleZoomOut}
+                      disabled={zoomScale <= 0.6}
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      title="Zoom Out (-)"
+                      aria-label="Zoom Out"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
 
-                {/* Reset Zoom / Scale Indicator Button */}
-                <button
-                  type="button"
-                  onClick={handleResetZoom}
-                  className="min-h-[44px] px-2.5 rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-800 dark:text-gray-200 border border-slate-200 dark:border-gray-700 font-mono text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
-                  title="Reset Zoom to 100% (Press 0)"
-                  aria-label="Reset Zoom"
-                >
-                  <span>{Math.round(zoomScale * 100)}%</span>
-                  {zoomScale !== 1.0 && <RotateCcw className="w-3 h-3 text-slate-400" />}
-                </button>
+                    {/* Reset Zoom / Scale Indicator Button */}
+                    <button
+                      type="button"
+                      onClick={handleResetZoom}
+                      className="min-h-[44px] px-2.5 rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-800 dark:text-gray-200 border border-slate-200 dark:border-gray-700 font-mono text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      title="Reset Zoom to 100% (Press 0)"
+                      aria-label="Reset Zoom"
+                    >
+                      <span>{Math.round(zoomScale * 100)}%</span>
+                      {zoomScale !== 1.0 && <RotateCcw className="w-3 h-3 text-slate-400" />}
+                    </button>
 
-                {/* Zoom In Button */}
-                <button
-                  type="button"
-                  onClick={handleZoomIn}
-                  disabled={zoomScale >= 2.5}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                  title="Zoom In (+)"
-                  aria-label="Zoom In"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
+                    {/* Zoom In Button */}
+                    <button
+                      type="button"
+                      onClick={handleZoomIn}
+                      disabled={zoomScale >= 2.5}
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      title="Zoom In (+)"
+                      aria-label="Zoom In"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
 
                 {/* Fullscreen Toggle Button */}
                 <button
@@ -578,8 +583,8 @@ export default function NotePreviewModal({
                 </button>
               </div>
 
-              {/* Direct Link to Raw File if available */}
-              {activePdfUrl && (
+              {/* Direct Link to Raw File if available (shown in reader mode) */}
+              {activePdfUrl && viewType !== 'pdf' && (
                 <a
                   href={activePdfUrl}
                   target="_blank"
@@ -594,18 +599,23 @@ export default function NotePreviewModal({
 
             {/* Document Canvas Container with Touch Pinch-to-Zoom Gesture Listeners */}
             <div
-              ref={canvasRef}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onTouchCancel={handleTouchEnd}
+              ref={viewType !== 'pdf' ? canvasRef : undefined}
+              onTouchStart={viewType !== 'pdf' ? handleTouchStart : undefined}
+              onTouchMove={viewType !== 'pdf' ? handleTouchMove : undefined}
+              onTouchEnd={viewType !== 'pdf' ? handleTouchEnd : undefined}
+              onTouchCancel={viewType !== 'pdf' ? handleTouchEnd : undefined}
               style={{
-                touchAction: zoomScale > 1.0 || isPinching ? 'none' : 'pan-x pan-y pinch-zoom',
+                touchAction:
+                  viewType !== 'pdf'
+                    ? zoomScale > 1.0 || isPinching
+                      ? 'none'
+                      : 'pan-x pan-y pinch-zoom'
+                    : 'pan-y',
               }}
               className="relative bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-3xl border border-slate-200/90 dark:border-gray-800/80 shadow-md p-3 sm:p-5 md:p-6 min-h-[580px] sm:min-h-[640px] flex-1 flex flex-col justify-between overflow-x-auto overflow-y-auto"
             >
               {/* Floating Mobile Pinch Indicator Badge */}
-              {(isPinching || zoomScale !== 1.0) && (
+              {viewType !== 'pdf' && (isPinching || zoomScale !== 1.0) && (
                 <div className="absolute top-3 right-3 z-20 pointer-events-none bg-slate-900/85 text-white text-[11px] px-3 py-1.5 rounded-full font-semibold shadow-lg backdrop-blur-xs flex items-center gap-1.5 animate-fadeIn">
                   <span>Zoom: {Math.round(zoomScale * 100)}%</span>
                   <span className="text-indigo-300">• Pinch or Double-Tap</span>
@@ -614,45 +624,31 @@ export default function NotePreviewModal({
 
               {/* Content Box with CSS Transform for Pinch-to-Zoom */}
               <div
-                style={{
-                  transform: `scale(${zoomScale})`,
-                  transformOrigin: 'top center',
-                  transition: isPinching ? 'none' : 'transform 150ms ease-out',
-                }}
+                style={
+                  viewType !== 'pdf'
+                    ? {
+                        transform: `scale(${zoomScale})`,
+                        transformOrigin: 'top center',
+                        transition: isPinching ? 'none' : 'transform 150ms ease-out',
+                      }
+                    : undefined
+                }
                 className="w-full flex-1 flex flex-col"
               >
-                {/* Embedded PDF View Mode */}
+                {/* Universal HTML5 Canvas PDF View Mode (Mobile & Desktop) */}
                 {viewType === 'pdf' && activePdfUrl ? (
                   <div className="w-full flex-1 flex flex-col space-y-3">
-                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-gray-400 pb-2 border-b border-slate-200 dark:border-gray-800 shrink-0">
-                      <span className="font-semibold text-slate-700 dark:text-gray-200 flex items-center gap-1.5">
-                        {offlineBlobUrl ? (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                            <span>Locally Cached Document (Offline Ready)</span>
-                          </>
-                        ) : (
-                          <span>PDF Document Viewer</span>
-                        )}
-                      </span>
-                      {activePdfUrl && (
-                        <a
-                          href={activePdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 text-[11px] font-semibold"
-                        >
-                          Open In New Tab <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                    <div className="w-full h-[65vh] min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] rounded-2xl overflow-hidden border border-slate-200 dark:border-gray-800 bg-slate-950 shadow-inner flex flex-col">
-                      <iframe
-                        src={`${activePdfUrl}#toolbar=1&navpanes=0`}
-                        title={`PDF Reader - ${note.title}`}
-                        className="w-full flex-1 border-0 rounded-2xl"
-                      />
-                    </div>
+                    {offlineBlobUrl && (
+                      <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium px-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Locally Cached Document (Offline Ready)</span>
+                      </div>
+                    )}
+                    <PdfDocumentViewer
+                      url={activePdfUrl}
+                      title={note.title}
+                      onDownload={() => onDownload(note)}
+                    />
                   </div>
                 ) : isImageAttachment && (activePdfUrl || offlineBlobUrl || note.file?.url) ? (
                   /* Attached Image Mode */
@@ -710,80 +706,82 @@ export default function NotePreviewModal({
                 )}
               </div>
 
-              {/* Pagination Controls & Watermark (Desktop & Mobile Friendly, 44x44px targets) */}
-              <div className="border-t border-slate-100 dark:border-gray-800 pt-4 mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-gray-400">
-                <div className="flex items-center gap-1">
-                  {/* First Page */}
-                  <button
-                    type="button"
-                    disabled={activePageIndex === 0}
-                    onClick={() => setActivePageIndex(0)}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
-                    title="First Page"
-                    aria-label="First Page"
-                  >
-                    <ChevronsLeft className="w-4 h-4" />
-                  </button>
-
-                  {/* Previous Page */}
-                  <button
-                    type="button"
-                    disabled={activePageIndex === 0}
-                    onClick={() => setActivePageIndex((prev) => Math.max(0, prev - 1))}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
-                    title="Previous Page (Left Arrow)"
-                    aria-label="Previous Page"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  {/* Page Jump Selector */}
-                  <div className="flex items-center px-2">
-                    <select
-                      value={activePageIndex}
-                      onChange={(e) => setActivePageIndex(Number(e.target.value))}
-                      className="min-h-[44px] px-3 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 font-mono font-semibold text-xs cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
-                      aria-label="Jump to page"
+              {/* Pagination Controls & Watermark for Study Notes Reader */}
+              {viewType === 'reader' && (
+                <div className="border-t border-slate-100 dark:border-gray-800 pt-4 mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-gray-400">
+                  <div className="flex items-center gap-1">
+                    {/* First Page */}
+                    <button
+                      type="button"
+                      disabled={activePageIndex === 0}
+                      onClick={() => setActivePageIndex(0)}
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                      title="First Page"
+                      aria-label="First Page"
                     >
-                      {pages.map((_, idx) => (
-                        <option key={idx} value={idx} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                          Page {idx + 1} of {pages.length}
-                        </option>
-                      ))}
-                    </select>
+                      <ChevronsLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Previous Page */}
+                    <button
+                      type="button"
+                      disabled={activePageIndex === 0}
+                      onClick={() => setActivePageIndex((prev) => Math.max(0, prev - 1))}
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                      title="Previous Page (Left Arrow)"
+                      aria-label="Previous Page"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Page Jump Selector */}
+                    <div className="flex items-center px-2">
+                      <select
+                        value={activePageIndex}
+                        onChange={(e) => setActivePageIndex(Number(e.target.value))}
+                        className="min-h-[44px] px-3 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 font-mono font-semibold text-xs cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
+                        aria-label="Jump to page"
+                      >
+                        {pages.map((_, idx) => (
+                          <option key={idx} value={idx} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                            Page {idx + 1} of {pages.length}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Next Page */}
+                    <button
+                      type="button"
+                      disabled={activePageIndex === pages.length - 1}
+                      onClick={() => setActivePageIndex((prev) => Math.min(pages.length - 1, prev + 1))}
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                      title="Next Page (Right Arrow)"
+                      aria-label="Next Page"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+
+                    {/* Last Page */}
+                    <button
+                      type="button"
+                      disabled={activePageIndex === pages.length - 1}
+                      onClick={() => setActivePageIndex(pages.length - 1)}
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                      title="Last Page"
+                      aria-label="Last Page"
+                    >
+                      <ChevronsRight className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  {/* Next Page */}
-                  <button
-                    type="button"
-                    disabled={activePageIndex === pages.length - 1}
-                    onClick={() => setActivePageIndex((prev) => Math.min(pages.length - 1, prev + 1))}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
-                    title="Next Page (Right Arrow)"
-                    aria-label="Next Page"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-
-                  {/* Last Page */}
-                  <button
-                    type="button"
-                    disabled={activePageIndex === pages.length - 1}
-                    onClick={() => setActivePageIndex(pages.length - 1)}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
-                    title="Last Page"
-                    aria-label="Last Page"
-                  >
-                    <ChevronsRight className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-gray-500">
+                    <span>Verified NoteShare Academic Edition</span>
+                    <span>•</span>
+                    <span>{note.file?.pages || pages.length} pages</span>
+                  </div>
                 </div>
-
-                <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-gray-500">
-                  <span>Verified NoteShare Academic Edition</span>
-                  <span>•</span>
-                  <span>{note.file?.pages || pages.length} pages</span>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Mobile Download CTA (min-h-[48px]) */}
