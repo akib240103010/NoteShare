@@ -36,6 +36,7 @@ import {
   updateNoteMetadataInSupabase,
 } from '../lib/supabase';
 import { cacheNoteOffline } from '../lib/offlineStorage';
+import { verifyNote } from '../lib/verifyNoteClient';
 
 export default function UploadPage({
   onBackToHome,
@@ -324,33 +325,19 @@ export default function UploadPage({
         setIsVerifyingAI(true);
         setUploadStatusText('Reading and parsing PDF pages...');
         try {
-          const geminiKey =
-            localStorage.getItem('noteshare_gemini_api_key') ||
-            import.meta.env.VITE_GEMINI_API_KEY ||
-            '';
-
           pdfBase64 = await fileToBase64(selectedFile.rawFile);
           setUploadStatusText(`Gemini AI verifying topic relevance against "${category}"...`);
 
-          const verifyRes = await fetch('/api/verify-note', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(geminiKey ? { 'x-gemini-api-key': geminiKey } : {}),
-            },
-            body: JSON.stringify({
-              title: title.trim(),
-              subject: category,
-              courseCode: courseCode.trim().toUpperCase(),
-              fileName: selectedFile?.name,
-              pdfBase64,
-              apiKey: geminiKey,
-            }),
+          verification = await verifyNote({
+            title: title.trim(),
+            subject: category,
+            courseCode: courseCode.trim().toUpperCase(),
+            fileName: selectedFile?.name,
+            file: selectedFile.rawFile,
+            pdfBase64,
           });
-
-          verification = await verifyRes.json();
         } catch (verifyErr) {
-          console.warn('API /api/verify-note request failed:', verifyErr);
+          console.warn('Note verification notice:', verifyErr);
         } finally {
           setIsVerifyingAI(false);
         }
@@ -548,22 +535,14 @@ export default function UploadPage({
           setUploadStatusText(`${progressPrefix}Verifying "${fileItem.name}" with Gemini AI for ${category}...`);
           try {
             filePdfBase64 = await fileToBase64(fileItem.rawFile);
-            const verifyRes = await fetch('/api/verify-note', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(geminiKey ? { 'x-gemini-api-key': geminiKey } : {}),
-              },
-              body: JSON.stringify({
-                title: finalNoteTitle,
-                subject: category,
-                courseCode: courseCode.trim().toUpperCase(),
-                fileName: fileItem.name,
-                pdfBase64: filePdfBase64,
-                apiKey: geminiKey,
-              }),
+            fileVerification = await verifyNote({
+              title: finalNoteTitle,
+              subject: category,
+              courseCode: courseCode.trim().toUpperCase(),
+              fileName: fileItem.name,
+              file: fileItem.rawFile,
+              pdfBase64: filePdfBase64,
             });
-            fileVerification = await verifyRes.json();
           } catch (verifyErr) {
             console.warn(`Verification notice for ${fileItem.name}:`, verifyErr);
           } finally {

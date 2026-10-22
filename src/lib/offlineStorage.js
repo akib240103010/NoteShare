@@ -59,108 +59,111 @@ export async function cacheNoteOffline(note, fileBlob = null) {
 
   try {
     const db = await getDB();
+    if (!db) return false;
 
-    // 1. Save metadata to IndexedDB
-    if (db) {
-      const tx = db.transaction([NOTES_STORE, FILES_STORE], 'readwrite');
-      const notesStore = tx.objectStore(NOTES_STORE);
-      const filesStore = tx.objectStore(FILES_STORE);
+    // STEP 1: Handle File Attachment Caching ASYNCHRONOUSLY BEFORE opening IndexedDB transaction!
+    // Performing awaits inside an open IndexedDB transaction causes TransactionInactiveError.
+    let blobToSave = fileBlob;
+    const fileUrl = note.file?.url || note.file_url || note.fileUrl;
 
-      const noteToSave = {
-        ...note,
-        cachedAt: Date.now(),
-        isCachedOffline: true,
-      };
-
-      notesStore.put(noteToSave);
-
-      // 2. Handle File Attachment Caching
-      let blobToSave = fileBlob;
-
-      const fileUrl = note.file?.url || note.file_url || note.fileUrl;
-
-      // If no blob is supplied but there is a file URL or base64 data URI
-      if (!blobToSave && fileUrl) {
-        if (typeof fileUrl === 'string' && fileUrl.startsWith('data:')) {
-          try {
-            const parts = fileUrl.split(',');
-            const mimeMatch = parts[0]?.match(/:(.*?);/);
-            const mime = (mimeMatch && mimeMatch[1]) || note.file?.type || 'application/pdf';
-            const bstr = atob(parts[1] || '');
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while (n--) {
-              u8arr[n] = bstr.charCodeAt(n);
-            }
-            blobToSave = new Blob([u8arr], { type: mime });
-          } catch (dataErr) {
-            console.warn('Could not parse data URI to Blob in offline cache:', dataErr);
+    // If no blob is supplied but there is a file URL or base64 data URI
+    if (!blobToSave && fileUrl) {
+      if (typeof fileUrl === 'string' && fileUrl.startsWith('data:')) {
+        try {
+          const parts = fileUrl.split(',');
+          const mimeMatch = parts[0]?.match(/:(.*?);/);
+          const mime = (mimeMatch && mimeMatch[1]) || note.file?.type || 'application/pdf';
+          const bstr = atob(parts[1] || '');
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
           }
-        } else if (typeof fileUrl === 'string' && (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))) {
-          try {
-            // Check Cache API first
-            if ('caches' in window) {
-              const cache = await caches.open(CACHE_NAME);
-              const cachedRes = await cache.match(fileUrl);
-              if (cachedRes) {
-                blobToSave = await cachedRes.blob();
-              } else {
-                // Fetch from network with cache storage fallback
-                const netRes = await fetch(fileUrl, { mode: 'cors' });
-                if (netRes.ok) {
+          blobToSave = new Blob([u8arr], { type: mime });
+        } catch (dataErr) {
+          console.warn('Could not parse data URI to Blob in offline cache:', dataErr);
+        }
+      } else if (typeof fileUrl === 'string' && (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))) {
+        try {
+          // Check Cache API first
+          if ('caches' in window) {
+            const cache = await caches.open(CACHE_NAME);
+            const cachedRes = await cache.match(fileUrl);
+            if (cachedRes) {
+              blobToSave = await cachedRes.blob();
+            } else {
+              // Fetch from network with cache storage fallback
+              const netRes = await fetch(fileUrl, { mode: 'cors' });
+              if (netRes.ok) {
+                try {
                   await cache.put(fileUrl, netRes.clone());
-                  blobToSave = await netRes.blob();
+                } catch {
+                  // Ignore cache put errors
                 }
+                blobToSave = await netRes.blob();
               }
             }
-          } catch (fetchErr) {
-            // Network fetch failure is expected if offline or CORS-restricted
           }
+        } catch {
+          // Network fetch failure is expected if offline or CORS-restricted
         }
       }
+    }
 
-      // If still no blob, generate synthetic reading blob from pagesContent/description
-      if (!blobToSave) {
-        const textContent = `NoteShare Academic Note\n================================\nTitle: ${note.title}\nCourse: ${note.courseCode} - ${note.courseName}\nUniversity: ${note.university}\nAuthor: ${note.author?.name}\nDate: ${note.uploadDate}\n\nSummary:\n${note.description}\n\nExcerpts:\n${note.pagesContent?.map((p) => `[Page ${p.pageNumber}: ${p.title}]\n${p.excerpt}\nKey Takeaway: ${p.keyTakeaway}\n`).join('\n') || ''}`;
-        blobToSave = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-      }
+    // If still no blob, generate synthetic reading blob from pagesContent/description
+    if (!blobToSave) {
+      const textContent = `NoteShare Academic Note\n================================\nTitle: ${note.title}\nCourse: ${note.courseCode} - ${note.courseName}\nUniversity: ${note.university}\nAuthor: ${note.author?.name}\nDate: ${note.uploadDate}\n\nSummary:\n${note.description}\n\nExcerpts:\n${note.pagesContent?.map((p) => `[Page ${p.pageNumber}: ${p.title}]\n${p.excerpt}\nKey Takeaway: ${p.keyTakeaway}\n`).join('\n') || ''}`;
+      blobToSave = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    }
 
-      if (blobToSave) {
-        const isPdfBlob = blobToSave.type.includes('pdf');
-        const isImgBlob = blobToSave.type.startsWith('image/');
-        filesStore.put({
-          noteId: note.id,
-          fileName: note.file?.name || `${note.courseCode}_Notes.pdf`,
-          fileFormat: isPdfBlob ? 'PDF' : (isImgBlob ? 'IMAGE' : 'TEXT'),
-          fileType: blobToSave.type,
-          blob: blobToSave,
-          cachedAt: Date.now(),
+    // Also put in Cache API under a synthetic key asynchronously
+    if (blobToSave && 'caches' in window) {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        const cacheKey = `/offline-notes/${note.id}/${encodeURIComponent(note.file?.name || 'document.pdf')}`;
+        const syntheticResponse = new Response(blobToSave, {
+          headers: {
+            'Content-Type': blobToSave.type || 'application/pdf',
+            'Content-Length': blobToSave.size.toString(),
+            'X-NoteShare-Offline': 'true',
+          },
         });
-
-        // Also put in Cache API under a synthetic key
-        if ('caches' in window) {
-          try {
-            const cache = await caches.open(CACHE_NAME);
-            const cacheKey = `/offline-notes/${note.id}/${encodeURIComponent(note.file?.name || 'document.pdf')}`;
-            const syntheticResponse = new Response(blobToSave, {
-              headers: {
-                'Content-Type': blobToSave.type || 'application/pdf',
-                'Content-Length': blobToSave.size.toString(),
-                'X-NoteShare-Offline': 'true',
-              },
-            });
-            await cache.put(cacheKey, syntheticResponse);
-          } catch (cErr) {
-            console.warn('Cache API put failed:', cErr);
-          }
-        }
+        await cache.put(cacheKey, syntheticResponse);
+      } catch (cErr) {
+        // Cache API non-blocking warning
       }
+    }
 
-      await new Promise((resolve) => {
-        tx.oncomplete = resolve;
-        tx.onerror = resolve;
+    // STEP 2: Write synchronously to IndexedDB object stores in a single, atomic transaction
+    const tx = db.transaction([NOTES_STORE, FILES_STORE], 'readwrite');
+    const notesStore = tx.objectStore(NOTES_STORE);
+    const filesStore = tx.objectStore(FILES_STORE);
+
+    const noteToSave = {
+      ...note,
+      cachedAt: Date.now(),
+      isCachedOffline: true,
+    };
+
+    notesStore.put(noteToSave);
+
+    if (blobToSave) {
+      const isPdfBlob = blobToSave.type.includes('pdf');
+      const isImgBlob = blobToSave.type.startsWith('image/');
+      filesStore.put({
+        noteId: note.id,
+        fileName: note.file?.name || `${note.courseCode}_Notes.pdf`,
+        fileFormat: isPdfBlob ? 'PDF' : (isImgBlob ? 'IMAGE' : 'TEXT'),
+        fileType: blobToSave.type,
+        blob: blobToSave,
+        cachedAt: Date.now(),
       });
     }
+
+    await new Promise((resolve) => {
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
 
     // Dispatch event to notify UI components that offline store was updated
     if (typeof window !== 'undefined') {

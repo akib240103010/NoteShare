@@ -101,8 +101,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. API Requests (e.g. /api/verify-note or Supabase): NetworkFirst with cache fallback
+  // 3. API Requests (e.g. /api/verify-note or Supabase): NetworkFirst with cache fallback for GET only
   if (url.pathname.startsWith('/api/') || url.hostname.includes('supabase.co')) {
+    // Pass POST, PUT, DELETE, PATCH directly to network without attempting Cache API operations
+    if (request.method !== 'GET') {
+      event.respondWith(fetch(request));
+      return;
+    }
+
     event.respondWith(
       fetch(request)
         .then((response) => {

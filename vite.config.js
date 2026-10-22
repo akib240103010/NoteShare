@@ -127,7 +127,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            urlPattern: ({ url, request }) => url.pathname.startsWith('/api/') && (!request || request.method === 'GET'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'noteshare-api-cache',
