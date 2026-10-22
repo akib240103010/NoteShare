@@ -68,6 +68,7 @@ export default function PdfDocumentViewer({
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
+  const viewportRef = useRef(null);
   const renderTaskRef = useRef(null);
 
   const [pdfDoc, setPdfDoc] = useState(null);
@@ -252,15 +253,176 @@ export default function PdfDocumentViewer({
   };
 
   // Zoom Button Handlers
-  const handleZoomIn = () => setZoomScale((prev) => Math.min(3.0, Number((prev + 0.25).toFixed(2))));
-  const handleZoomOut = () => setZoomScale((prev) => Math.max(0.6, Number((prev - 0.25).toFixed(2))));
-  const handleResetZoom = () => setZoomScale(1.0);
+  const handleZoomIn = useCallback(() => setZoomScale((prev) => Math.min(3.0, Number((prev + 0.25).toFixed(2)))), []);
+  const handleZoomOut = useCallback(() => setZoomScale((prev) => Math.max(0.6, Number((prev - 0.25).toFixed(2)))), []);
+  const handleResetZoom = useCallback(() => setZoomScale(1.0), []);
 
   // Page Navigation Handlers
-  const handlePrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
-  const handleNextPage = () => setCurrentPage((prev) => Math.min(numPages, prev + 1));
-  const handleFirstPage = () => setCurrentPage(1);
-  const handleLastPage = () => setCurrentPage(numPages);
+  const handlePrevPage = useCallback(() => {
+    setCurrentPage((prev) => {
+      if (prev > 1) {
+        if (viewportRef.current) viewportRef.current.scrollTop = 0;
+        return prev - 1;
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    setCurrentPage((prev) => {
+      if (prev < numPages) {
+        if (viewportRef.current) viewportRef.current.scrollTop = 0;
+        return prev + 1;
+      }
+      return prev;
+    });
+  }, [numPages]);
+
+  const handleFirstPage = useCallback(() => {
+    setCurrentPage(1);
+    if (viewportRef.current) viewportRef.current.scrollTop = 0;
+  }, []);
+
+  const handleLastPage = useCallback(() => {
+    setCurrentPage(numPages);
+    if (viewportRef.current) viewportRef.current.scrollTop = 0;
+  }, [numPages]);
+
+  // -------------------------------------------------------------------------
+  // Keyboard Navigation: Left, Right, Up, Down, PageUp, PageDown, Home, End
+  // -------------------------------------------------------------------------
+  const handleKeyDown = useCallback(
+    (e) => {
+      // Ignore if user is interacting with an input, textarea, or select element
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)) return;
+
+      const viewport = viewportRef.current;
+
+      // 1. Arrow Right: Next Page
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setCurrentPage((prev) => {
+          if (prev < numPages) {
+            if (viewport) viewport.scrollTop = 0;
+            return prev + 1;
+          }
+          return prev;
+        });
+      }
+
+      // 2. Arrow Left: Previous Page
+      else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setCurrentPage((prev) => {
+          if (prev > 1) {
+            if (viewport) viewport.scrollTop = 0;
+            return prev - 1;
+          }
+          return prev;
+        });
+      }
+
+      // 3. Arrow Down: Scroll Down or Advance to Next Page when at bottom
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (viewport) {
+          const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
+          // If already at or near bottom (within 20px) and there's a next page, advance page
+          if (maxScrollTop > 0 && viewport.scrollTop >= maxScrollTop - 20) {
+            setCurrentPage((prev) => {
+              if (prev < numPages) {
+                viewport.scrollTop = 0;
+                return prev + 1;
+              }
+              return prev;
+            });
+          } else {
+            // Otherwise scroll down smoothly
+            viewport.scrollBy({ top: 160, behavior: 'smooth' });
+          }
+        } else {
+          setCurrentPage((prev) => Math.min(numPages, prev + 1));
+        }
+      }
+
+      // 4. Arrow Up: Scroll Up or Go to Previous Page when at top
+      else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (viewport) {
+          // If already at the top (within 10px) and there's a previous page, go to previous page
+          if (viewport.scrollTop <= 10) {
+            setCurrentPage((prev) => {
+              if (prev > 1) {
+                setTimeout(() => {
+                  if (viewportRef.current) {
+                    viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
+                  }
+                }, 80);
+                return prev - 1;
+              }
+              return prev;
+            });
+          } else {
+            // Otherwise scroll up smoothly
+            viewport.scrollBy({ top: -160, behavior: 'smooth' });
+          }
+        } else {
+          setCurrentPage((prev) => Math.max(1, prev - 1));
+        }
+      }
+
+      // 5. PageDown / PageUp
+      else if (e.key === 'PageDown') {
+        e.preventDefault();
+        setCurrentPage((prev) => {
+          if (prev < numPages) {
+            if (viewport) viewport.scrollTop = 0;
+            return prev + 1;
+          }
+          return prev;
+        });
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        setCurrentPage((prev) => {
+          if (prev > 1) {
+            if (viewport) viewport.scrollTop = 0;
+            return prev - 1;
+          }
+          return prev;
+        });
+      }
+
+      // 6. Home / End
+      else if (e.key === 'Home') {
+        e.preventDefault();
+        setCurrentPage(1);
+        if (viewport) viewport.scrollTop = 0;
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        setCurrentPage(numPages);
+        if (viewport) viewport.scrollTop = 0;
+      }
+
+      // 7. Zoom shortcuts (+, -, 0)
+      else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        handleZoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        handleZoomOut();
+      } else if (e.key === '0') {
+        e.preventDefault();
+        handleResetZoom();
+      }
+    },
+    [numPages, handleZoomIn, handleZoomOut, handleResetZoom]
+  );
+
+  // Attach global keyboard listener when PDF document is active
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // -------------------------------------------------------------------------
   // Render: Loading Spinner
@@ -495,13 +657,15 @@ export default function PdfDocumentViewer({
         </div>
       </div>
 
-      {/* Main Canvas Viewport Area with Touch Pinch-Zoom Listeners */}
+      {/* Main Canvas Viewport Area with Touch Pinch-Zoom & Keyboard Listeners */}
       <div
+        ref={viewportRef}
+        tabIndex={0}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
-        className="w-full flex-1 min-h-[460px] sm:min-h-[580px] lg:min-h-[660px] rounded-2xl overflow-auto border border-slate-200 dark:border-gray-800 bg-slate-900/90 flex flex-col items-center justify-center p-2 sm:p-4 relative shadow-inner"
+        className="w-full flex-1 min-h-[460px] sm:min-h-[580px] lg:min-h-[660px] rounded-2xl overflow-auto border border-slate-200 dark:border-gray-800 bg-slate-900/90 flex flex-col items-center justify-center p-2 sm:p-4 relative shadow-inner focus:outline-hidden focus:ring-1 focus:ring-indigo-500/30"
         style={{
           touchAction: zoomScale > 1.0 || isPinching ? 'pan-x pan-y' : 'pan-y pinch-zoom',
         }}
@@ -523,12 +687,28 @@ export default function PdfDocumentViewer({
         </div>
       </div>
 
-      {/* Bottom Status & Swipe Note */}
+      {/* Bottom Status & Keyboard Shortcut Hints */}
       <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400 px-1 pt-1">
-        <span className="flex items-center gap-1">
-          <FileText className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Document: {title}</span>
+        <span className="flex items-center gap-1.5 truncate max-w-xs sm:max-w-md">
+          <FileText className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+          <span className="truncate">Document: {title}</span>
         </span>
+
+        {/* Desktop Keyboard Hints */}
+        <div className="hidden sm:flex items-center gap-2 text-[10px] text-slate-400 dark:text-gray-500 font-mono">
+          <span className="inline-flex items-center gap-0.5">
+            <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">←</kbd>
+            <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">→</kbd>
+            <span className="ml-0.5">page</span>
+          </span>
+          <span>•</span>
+          <span className="inline-flex items-center gap-0.5">
+            <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">↑</kbd>
+            <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">↓</kbd>
+            <span className="ml-0.5">scroll</span>
+          </span>
+        </div>
+
         <span>Page {currentPage} of {numPages}</span>
       </div>
     </div>

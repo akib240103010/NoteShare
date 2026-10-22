@@ -245,24 +245,38 @@ export default function NotePreviewModal({
       // Ignore if user is typing in a comment input or form field
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
-      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-        setActivePageIndex((prev) => Math.min(pages.length - 1, prev + 1));
-      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-        setActivePageIndex((prev) => Math.max(0, prev - 1));
-      } else if (e.key === '+' || e.key === '=') {
-        setZoomScale((prev) => Math.min(2.5, Number((prev + 0.15).toFixed(2))));
-      } else if (e.key === '-' || e.key === '_') {
-        setZoomScale((prev) => Math.max(0.6, Number((prev - 0.15).toFixed(2))));
-      } else if (e.key === '0') {
-        setZoomScale(1.0);
-      } else if (e.key === 'Escape' && !document.fullscreenElement) {
+      if (e.key === 'Escape' && !document.fullscreenElement) {
         onClose();
+        return;
+      }
+
+      // Reader text-excerpt view pagination & zoom (PDF view has its own dedicated handler in PdfDocumentViewer)
+      if (viewType === 'reader') {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+          setActivePageIndex((prev) => Math.min(pages.length - 1, prev + 1));
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          setActivePageIndex((prev) => Math.max(0, prev - 1));
+        } else if (e.key === '+' || e.key === '=') {
+          setZoomScale((prev) => Math.min(2.5, Number((prev + 0.15).toFixed(2))));
+        } else if (e.key === '-' || e.key === '_') {
+          setZoomScale((prev) => Math.max(0.6, Number((prev - 0.15).toFixed(2))));
+        } else if (e.key === '0') {
+          setZoomScale(1.0);
+        }
+      } else if (isImageAttachment) {
+        if (e.key === '+' || e.key === '=') {
+          setZoomScale((prev) => Math.min(2.5, Number((prev + 0.15).toFixed(2))));
+        } else if (e.key === '-' || e.key === '_') {
+          setZoomScale((prev) => Math.max(0.6, Number((prev - 0.15).toFixed(2))));
+        } else if (e.key === '0') {
+          setZoomScale(1.0);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [pages.length, onClose]);
+  }, [pages.length, onClose, viewType, isImageAttachment]);
 
   // Touch Gesture Handlers for Pinch-to-Zoom
   const handleTouchStart = (e) => {
