@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import HeroSearch from './components/HeroSearch';
 import CategoryFilters from './components/CategoryFilters';
@@ -27,9 +27,11 @@ import {
   cacheNoteOffline,
   getCachedNoteFile,
   getAllCachedNotes,
+  purgeStaleApiCaches,
 } from './lib/offlineStorage';
 import {
   isSupabaseConfigured,
+  supabase,
   fetchNotesFromSupabase,
   updateNoteDownloads,
   updateNoteUpvotes,
@@ -94,47 +96,85 @@ function NoteShareApp() {
     }
   }, [authNotification, setAuthNotification]);
 
-  // Sync notes strictly and exclusively from live Supabase notes table on mount and when auth resolves
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadLiveNotes() {
-      // If Supabase is configured, wait until auth state finishes initializing persisted session
-      if (isSupabaseConfigured && authLoading) {
-        return;
-      }
-
-      setIsLoadingNotes(true);
-      try {
-        if (isSupabaseConfigured) {
-          const remoteNotes = await fetchNotesFromSupabase();
-          if (isMounted) {
-            const liveNotes = Array.isArray(remoteNotes) ? remoteNotes : [];
-            setNotes(liveNotes);
-            setIsLoadingNotes(false);
-          }
-        } else {
-          // If Supabase is not configured yet, initialize as empty array
-          if (isMounted) {
-            setNotes([]);
-            setIsLoadingNotes(false);
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load live notes from Supabase:', err);
-        if (isMounted) {
-          setNotes([]);
-          setIsLoadingNotes(false);
-        }
-      }
+  // Refresh notes live from Supabase (purging any stale browser/service-worker API cache)
+  const refreshLiveNotes = useCallback(async (showToast = false) => {
+    if (!isSupabaseConfigured) {
+      setNotes([]);
+      setIsLoadingNotes(false);
+      return;
     }
 
-    loadLiveNotes();
+    setIsLoadingNotes(true);
+    try {
+      // Purge any stale REST API responses that might have been cached on mobile devices
+      await purgeStaleApiCaches();
+      const remoteNotes = await fetchNotesFromSupabase();
+      const liveNotes = Array.isArray(remoteNotes) ? remoteNotes : [];
+      setNotes(liveNotes);
+      if (showToast) {
+        setToast({
+          type: 'success',
+          title: 'Notes Synced Live',
+          message: `Synced ${liveNotes.length} ${liveNotes.length === 1 ? 'note' : 'notes'} from the cloud.`,
+        });
+      }
+    } catch (err) {
+      console.warn('Failed to sync live notes from Supabase:', err);
+    } finally {
+      setIsLoadingNotes(false);
+    }
+  }, [isSupabaseConfigured]);
+
+  // Initial load when auth initializes or user changes
+  useEffect(() => {
+    if (isSupabaseConfigured && authLoading) return;
+    refreshLiveNotes(false);
+  }, [authLoading, user?.id, refreshLiveNotes]);
+
+  // Auto-refresh when tab/app regains focus or visibility on mobile devices
+  useEffect(() => {
+    const handleSync = () => {
+      if (document.visibilityState === 'visible' && isOnline && isSupabaseConfigured) {
+        refreshLiveNotes(false);
+      }
+    };
+    window.addEventListener('visibilitychange', handleSync);
+    window.addEventListener('focus', handleSync);
+    return () => {
+      window.removeEventListener('visibilitychange', handleSync);
+      window.removeEventListener('focus', handleSync);
+    };
+  }, [isOnline, isSupabaseConfigured, refreshLiveNotes]);
+
+  // Supabase Realtime channel subscription (Cross-device laptop <-> phone synchronization)
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const channel = supabase
+      .channel('public:notes:global_feed')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notes' },
+        () => {
+          // Live note change detected across any student session/device!
+          refreshLiveNotes(false);
+        }
+      )
+      .subscribe();
 
     return () => {
-      isMounted = false;
+      supabase.removeChannel(channel);
     };
-  }, [authLoading, user?.id]);
+  }, [isSupabaseConfigured, refreshLiveNotes]);
+
+  // Intra-app event listener for uploads and deletes
+  useEffect(() => {
+    const handleNoteEvent = () => {
+      refreshLiveNotes(false);
+    };
+    window.addEventListener('noteshare:notes-updated', handleNoteEvent);
+    return () => window.removeEventListener('noteshare:notes-updated', handleNoteEvent);
+  }, [refreshLiveNotes]);
 
   // When offline, merge any cached notes from local IndexedDB
   useEffect(() => {
@@ -693,6 +733,8 @@ function NoteShareApp() {
                 onResetFilters={handleResetFilters}
                 hasActiveFilters={hasActiveFilters}
                 availableUniversities={availableUniversities}
+                onRefresh={() => refreshLiveNotes(true)}
+                isRefreshing={isLoadingNotes}
               />
 
               {/* Real-Time Tag-Based Filtering Bar */}

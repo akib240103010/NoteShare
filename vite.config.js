@@ -110,10 +110,11 @@ export default defineConfig({
             },
           },
           {
+            // Only cache binary file assets (PDFs, images) from Supabase Storage or document attachments
             urlPattern: ({ url }) =>
               url.pathname.endsWith('.pdf') ||
-              url.pathname.includes('/storage/v1/object/public/notes-files/') ||
-              url.hostname.includes('supabase.co'),
+              url.pathname.includes('/storage/v1/object/public/') ||
+              url.pathname.includes('/storage/v1/object/authenticated/'),
             handler: 'CacheFirst',
             options: {
               cacheName: 'noteshare-notes-files',
@@ -123,6 +124,25 @@ export default defineConfig({
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 60, // 60 days
+              },
+            },
+          },
+          {
+            // Dynamic Supabase REST API queries (/rest/v1/) and Auth (/auth/v1/) must ALWAYS be NetworkFirst
+            urlPattern: ({ url, request }) =>
+              url.hostname.includes('supabase.co') &&
+              (url.pathname.includes('/rest/v1/') || url.pathname.includes('/auth/v1/')) &&
+              (!request || request.method === 'GET'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'noteshare-supabase-api',
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60, // 1 hour fallback only when completely offline
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
               },
             },
           },

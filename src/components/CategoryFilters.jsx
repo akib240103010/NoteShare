@@ -40,6 +40,8 @@ export default function CategoryFilters({
   onResetFilters,
   hasActiveFilters,
   availableUniversities = UNIVERSITIES,
+  onRefresh,
+  isRefreshing = false,
 }) {
   return (
     <div className="space-y-4">
@@ -136,6 +138,21 @@ export default function CategoryFilters({
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
+            </button>
+          )}
+
+          {/* Cloud Sync / Refresh live notes button */}
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer border border-slate-200/80 dark:border-gray-700 disabled:opacity-50"
+              title="Sync live notes from Supabase cloud"
+              aria-label="Sync notes"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 text-indigo-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden xs:inline">{isRefreshing ? 'Syncing...' : 'Sync'}</span>
             </button>
           )}
         </div>

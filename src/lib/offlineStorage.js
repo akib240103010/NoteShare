@@ -333,3 +333,32 @@ export async function removeCachedNote(noteId) {
     return false;
   }
 }
+
+/**
+ * Automatically purge any accidentally cached dynamic Supabase REST API responses
+ * from previous Service Worker versions (e.g. notes-files cache).
+ */
+export async function purgeStaleApiCaches() {
+  if (typeof window === 'undefined' || !('caches' in window)) return;
+  try {
+    const keys = await caches.keys();
+    for (const name of keys) {
+      if (name.includes('notes-files') || name.includes('api-cache') || name.includes('noteshare-')) {
+        const cache = await caches.open(name);
+        const reqs = await cache.keys();
+        for (const req of reqs) {
+          if (
+            req.url.includes('supabase.co/rest/v1/') ||
+            req.url.includes('supabase.co/auth/v1/') ||
+            (name.includes('notes-files') && req.url.includes('/rest/v1/'))
+          ) {
+            await cache.delete(req);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Cache purge notice:', err);
+  }
+}
+
