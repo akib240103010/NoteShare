@@ -147,7 +147,12 @@ export default function NoteCard({
                 {note.uploadDate}
               </span>
               <span className="text-slate-300 dark:text-gray-600">•</span>
-              <span>{note.file?.pages || 1} pages</span>
+              <span>
+                {(() => {
+                  const p = Number(note.file?.pages) || (Array.isArray(note.pagesContent) && note.pagesContent.length > 0 ? note.pagesContent.length : 1);
+                  return `${p} ${p === 1 ? 'page' : 'pages'}`;
+                })()}
+              </span>
               <span className="text-slate-300 dark:text-gray-600">•</span>
               <span>{note.file?.size || '2.0 MB'}</span>
 
@@ -413,7 +418,10 @@ export default function NoteCard({
         <div className="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-300 mb-3.5 px-0.5">
           <span className="flex items-center gap-1">
             <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-gray-400" />
-            {note.file?.pages || 1} pages ({note.file?.size || '2 MB'})
+            {(() => {
+              const p = Number(note.file?.pages) || (Array.isArray(note.pagesContent) && note.pagesContent.length > 0 ? note.pagesContent.length : 1);
+              return `${p} ${p === 1 ? 'page' : 'pages'}`;
+            })()} ({note.file?.size || '2 MB'})
           </span>
           <span>{note.downloads?.toLocaleString()} downloads</span>
         </div>

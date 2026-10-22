@@ -35,6 +35,7 @@ import {
   fetchNotesFromSupabase,
   updateNoteDownloads,
   updateNoteUpvotes,
+  updateNotePageCount,
   deleteNoteFromSupabase,
 } from './lib/supabase';
 
@@ -615,6 +616,24 @@ function NoteShareApp() {
     }
   };
 
+  // Sync real page count detected by PDF canvas reader with note card & database
+  const handlePageCountChange = useCallback((noteId, realPages) => {
+    if (!noteId || !realPages || realPages <= 0) return;
+    setNotes((prevNotes) =>
+      prevNotes.map((n) =>
+        n.id === noteId ? { ...n, file: { ...n.file, pages: realPages } } : n
+      )
+    );
+    if (previewNote?.id === noteId) {
+      setPreviewNote((prev) =>
+        prev ? { ...prev, file: { ...prev.file, pages: realPages } } : prev
+      );
+    }
+    if (isSupabaseConfigured && isOnline) {
+      updateNotePageCount(noteId, realPages);
+    }
+  }, [isSupabaseConfigured, isOnline, previewNote?.id]);
+
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('All Categories');
@@ -818,6 +837,7 @@ function NoteShareApp() {
             setPreviewNote(null);
             handleEditNote(note);
           }}
+          onPageCountChange={handlePageCountChange}
         />
       )}
 

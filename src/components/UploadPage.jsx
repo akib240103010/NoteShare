@@ -37,6 +37,7 @@ import {
 } from '../lib/supabase';
 import { cacheNoteOffline } from '../lib/offlineStorage';
 import { verifyNote } from '../lib/verifyNoteClient';
+import * as pdfjsLib from 'pdfjs-dist';
 
 export default function UploadPage({
   onBackToHome,
@@ -177,13 +178,30 @@ export default function UploadPage({
       let detectedPages = 1;
       if (!isImage && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
         try {
-          const slice = await file.slice(0, 120000).text();
-          const countMatch = slice.match(/\/Count\s+(\d+)/);
-          if (countMatch && parseInt(countMatch[1], 10) > 0) {
-            detectedPages = Math.min(500, parseInt(countMatch[1], 10));
+          const arrayBuffer = await file.arrayBuffer();
+          const doc = await pdfjsLib.getDocument({
+            data: new Uint8Array(arrayBuffer),
+            cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.296/cmaps/',
+            cMapPacked: true,
+          }).promise;
+          if (doc && doc.numPages > 0) {
+            detectedPages = doc.numPages;
           }
-        } catch {
-          detectedPages = 1;
+        } catch (pdfErr) {
+          console.warn('PDF page count extraction notice, using binary scanner fallback:', pdfErr);
+          try {
+            const buf = await file.arrayBuffer();
+            const text = new TextDecoder('latin1').decode(buf);
+            const matches = text.match(/\/Count\s+(\d+)/g);
+            if (matches && matches.length > 0) {
+              const lastMatch = matches[matches.length - 1].match(/\/Count\s+(\d+)/);
+              if (lastMatch && parseInt(lastMatch[1], 10) > 0) {
+                detectedPages = parseInt(lastMatch[1], 10);
+              }
+            }
+          } catch {
+            detectedPages = 1;
+          }
         }
       }
 

@@ -78,12 +78,20 @@ export default function NotePreviewModal({
   currentUserId = null,
   onDelete = null,
   onEdit = null,
+  onPageCountChange = null,
 }) {
   const isAuthor = Boolean(currentUserId && note?.author?.id && String(currentUserId) === String(note.author.id));
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [zoomScale, setZoomScale] = useState(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPinching, setIsPinching] = useState(false);
+  const [detectedPageCount, setDetectedPageCount] = useState(() => Number(note?.file?.pages) || (Array.isArray(note?.pagesContent) && note.pagesContent.length > 0 ? note.pagesContent.length : 1));
+
+  useEffect(() => {
+    if (note?.file?.pages) {
+      setDetectedPageCount(Number(note.file.pages));
+    }
+  }, [note?.file?.pages]);
 
   const initialTouchDistanceRef = useRef(null);
   const initialZoomRef = useRef(1.0);
@@ -662,6 +670,12 @@ export default function NotePreviewModal({
                       url={activePdfUrl}
                       title={note.title}
                       onDownload={() => onDownload(note)}
+                      onPageCountChange={(realPageCount) => {
+                        setDetectedPageCount(realPageCount);
+                        if (onPageCountChange) {
+                          onPageCountChange(note.id, realPageCount);
+                        }
+                      }}
                     />
                   </div>
                 ) : isImageAttachment && (activePdfUrl || offlineBlobUrl || note.file?.url) ? (
@@ -792,7 +806,7 @@ export default function NotePreviewModal({
                   <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-gray-500">
                     <span>Verified NoteShare Academic Edition</span>
                     <span>•</span>
-                    <span>{note.file?.pages || pages.length} pages</span>
+                    <span>{detectedPageCount} {detectedPageCount === 1 ? 'page' : 'pages'}</span>
                   </div>
                 </div>
               )}
@@ -894,7 +908,7 @@ export default function NotePreviewModal({
                 </div>
                 <div className="flex justify-between items-center py-0.5 border-b border-slate-200/60 dark:border-gray-700/60">
                   <span className="text-slate-400 dark:text-gray-400">Pages:</span>
-                  <span className="font-semibold text-slate-800 dark:text-gray-200">{note.file?.pages || pages.length} pages</span>
+                  <span className="font-semibold text-slate-800 dark:text-gray-200">{detectedPageCount} {detectedPageCount === 1 ? 'page' : 'pages'}</span>
                 </div>
                 <div className="flex justify-between items-center py-0.5">
                   <span className="text-slate-400 dark:text-gray-400">Upload Date:</span>

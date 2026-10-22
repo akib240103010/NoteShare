@@ -965,6 +965,21 @@ export async function updateNoteUpvotes(noteId, newRating, newReviewsCount) {
   }
 }
 
+/**
+ * Updates the verified page count of a note in Supabase
+ */
+export async function updateNotePageCount(noteId, newPageCount) {
+  if (!supabase || !noteId || !newPageCount || newPageCount <= 0) return;
+  try {
+    await supabase
+      .from('notes')
+      .update({ pages: Number(newPageCount) })
+      .eq('id', noteId);
+  } catch (err) {
+    console.warn('Failed to update note page count in Supabase:', err);
+  }
+}
+
 // -----------------------------------------------------------------------------
 // CLOUD STORAGE BUCKET UPLOADS (PDF & IMAGE ATTACHMENTS)
 // -----------------------------------------------------------------------------
