@@ -39,6 +39,14 @@ import { cacheNoteOffline } from '../lib/offlineStorage';
 import { verifyNote } from '../lib/verifyNoteClient';
 import * as pdfjsLib from 'pdfjs-dist';
 
+try {
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  }
+} catch {
+  // worker init fallback
+}
+
 export default function UploadPage({
   onBackToHome,
   onUploadSuccess,
@@ -401,8 +409,10 @@ export default function UploadPage({
 
       // Sync actual page count if returned by parser
       const actualPages = verification?.pageCount || selectedFile?.pages || editingNote?.file?.pages || 1;
-      if (verification?.pageCount && selectedFile) {
-        setSelectedFile((prev) => (prev ? { ...prev, pages: verification.pageCount } : prev));
+      if (verification?.pageCount && selectedFiles.length > 0) {
+        setSelectedFiles((prev) =>
+          prev.map((f, i) => (i === 0 ? { ...f, pages: verification.pageCount } : f))
+        );
       }
 
       let cloudFileUrl = null;
@@ -549,22 +559,28 @@ export default function UploadPage({
 
         // 1. Run Gemini AI verification on PDF if file exists
         if (fileItem.rawFile) {
-          setIsVerifyingAI(true);
-          setUploadStatusText(`${progressPrefix}Verifying "${fileItem.name}" with Gemini AI for ${category}...`);
-          try {
-            filePdfBase64 = await fileToBase64(fileItem.rawFile);
-            fileVerification = await verifyNote({
-              title: finalNoteTitle,
-              subject: category,
-              courseCode: courseCode.trim().toUpperCase(),
-              fileName: fileItem.name,
-              file: fileItem.rawFile,
-              pdfBase64: filePdfBase64,
-            });
-          } catch (verifyErr) {
-            console.warn(`Verification notice for ${fileItem.name}:`, verifyErr);
-          } finally {
-            setIsVerifyingAI(false);
+          if (totalFiles === 1 && verification) {
+            fileVerification = verification;
+            fileWarning = activeWarning;
+            filePdfBase64 = pdfBase64;
+          } else {
+            setIsVerifyingAI(true);
+            setUploadStatusText(`${progressPrefix}Verifying "${fileItem.name}" with Gemini AI for ${category}...`);
+            try {
+              filePdfBase64 = await fileToBase64(fileItem.rawFile);
+              fileVerification = await verifyNote({
+                title: finalNoteTitle,
+                subject: category,
+                courseCode: courseCode.trim().toUpperCase(),
+                fileName: fileItem.name,
+                file: fileItem.rawFile,
+                pdfBase64: filePdfBase64,
+              });
+            } catch (verifyErr) {
+              console.warn(`Verification notice for ${fileItem.name}:`, verifyErr);
+            } finally {
+              setIsVerifyingAI(false);
+            }
           }
 
           // Handle Verification Results & Scanned/Image Document Fallbacks
@@ -826,7 +842,6 @@ export default function UploadPage({
                 setCourseName('');
                 setDescription('');
                 setSelectedFiles([]);
-                setSelectedFile(null);
                 setImagePreviewUrl(null);
                 setIntegrityAgreed(false);
               }}
