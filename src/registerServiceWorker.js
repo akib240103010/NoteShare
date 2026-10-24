@@ -8,17 +8,32 @@ export function registerServiceWorker() {
     return;
   }
 
+  // Automatically reload when a new service worker version activates so user gets fresh code immediately
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
       .then((registration) => {
-        // Check for updates
+        // Trigger immediate check for newer deployments
+        registration.update().catch(() => {});
+
         registration.addEventListener('updatefound', () => {
           const installingWorker = registration.installing;
           if (installingWorker) {
             installingWorker.addEventListener('statechange', () => {
               if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('NoteShare PWA update available.');
+                console.log('NoteShare PWA update installed.');
+                if (!refreshing) {
+                  refreshing = true;
+                  window.location.reload();
+                }
               }
             });
           }
