@@ -67,9 +67,6 @@ export default function AuthGuard({ children }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [isConfigOpen, setIsConfigOpen] = useState(false);
 
-  // Rate limit cooldown timer in seconds
-  const [rateLimitTimer, setRateLimitTimer] = useState(0);
-
   // Password reset state
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
@@ -84,22 +81,6 @@ export default function AuthGuard({ children }) {
   const [fullName, setFullName] = useState('');
   const [university, setUniversity] = useState('');
   const [degree, setDegree] = useState('');
-
-  // Active interval countdown for rate limit cooldown
-  useEffect(() => {
-    if (rateLimitTimer <= 0) return;
-    const interval = setInterval(() => {
-      setRateLimitTimer((prev) => {
-        if (prev <= 1) {
-          setErrorMsg('');
-          setAuthErrorDetails(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [rateLimitTimer]);
 
   // 1. Initial Session Checking State
   if (loading) {
@@ -190,10 +171,6 @@ export default function AuthGuard({ children }) {
       const parsed = err.parsed || parseAuthError(err);
       setAuthErrorDetails(parsed);
       setErrorMsg(parsed.message || err.message || 'Authentication failed. Please verify credentials.');
-
-      if (parsed.type === 'rate_limit') {
-        setRateLimitTimer(parsed.waitSeconds || 60);
-      }
     } finally {
       setSubmitting(false);
     }
@@ -232,9 +209,6 @@ export default function AuthGuard({ children }) {
       setTimeout(() => setResetSuccess(false), 5000);
     } catch (err) {
       const parsed = err.parsed || parseAuthError(err);
-      if (parsed.type === 'rate_limit') {
-        setRateLimitTimer(parsed.waitSeconds || 60);
-      }
       setErrorMsg(parsed.message);
     } finally {
       setResetLoading(false);
@@ -479,20 +453,6 @@ export default function AuthGuard({ children }) {
                   </div>
                 )}
 
-                {/* Rate Limit Alert */}
-                {rateLimitTimer > 0 && (
-                  <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-200 space-y-1 animate-fadeIn">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Security Rate Limit Active</span>
-                      <span className="font-mono font-bold text-amber-700 dark:text-amber-300">
-                        {rateLimitTimer}s
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-amber-700 dark:text-amber-300">
-                      Please wait for the security countdown before attempting another auth action.
-                    </p>
-                  </div>
-                )}
 
                 {/* Unconfirmed Email Special Action Banner */}
                 {(authErrorDetails?.type === 'email_not_confirmed' ||
@@ -578,9 +538,23 @@ export default function AuthGuard({ children }) {
                 {errorMsg &&
                   authErrorDetails?.type !== 'email_not_confirmed' &&
                   !/email.*not.*confirmed/i.test(errorMsg) && (
-                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-900/60 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-300 animate-fadeIn">
-                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span>{errorMsg}</span>
+                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-900/60 space-y-2 text-xs text-rose-700 dark:text-rose-300 animate-fadeIn">
+                      <div className="flex items-start gap-2.5">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">{errorMsg}</span>
+                      </div>
+                      {authErrorDetails?.type === 'rate_limit' && (
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={handleDemoLogin}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 dark:hover:bg-amber-900/70 text-amber-900 dark:text-amber-200 font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Enter in Instant Guest Mode</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -628,7 +602,7 @@ export default function AuthGuard({ children }) {
                         <button
                           type="button"
                           onClick={handleForgotPassword}
-                          disabled={resetLoading || rateLimitTimer > 0}
+                          disabled={resetLoading}
                           className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 underline cursor-pointer disabled:opacity-50"
                         >
                           {resetLoading ? 'Sending link...' : 'Send Password Reset Link'}

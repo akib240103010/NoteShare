@@ -137,12 +137,12 @@ export function parseAuthError(err) {
 
   if (isRateLimit) {
     const matchSeconds = rawMessage.match(/after\s+(\d+)\s+seconds/i);
-    const waitSeconds = matchSeconds ? parseInt(matchSeconds[1], 10) : 60;
+    const waitSeconds = matchSeconds ? parseInt(matchSeconds[1], 10) : 10;
 
     return {
       type: 'rate_limit',
       waitSeconds,
-      message: `Rate limit reached. For security purposes, please wait ${waitSeconds}s before trying again.`,
+      message: 'Too many requests sent in a short time. Please wait a moment before trying again, or use Instant Guest Access.',
       raw: rawMessage,
     };
   }

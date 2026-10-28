@@ -41,9 +41,6 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [requiresConfirmationNotice, setRequiresConfirmationNotice] = useState(null);
 
-  // Rate limit cooldown timer in seconds
-  const [rateLimitTimer, setRateLimitTimer] = useState(0);
-
   // Password reset state
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
@@ -52,32 +49,12 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSent, setResendSent] = useState(false);
 
-  // Active interval countdown for rate limit cooldown
-  useEffect(() => {
-    if (rateLimitTimer <= 0) return;
-    const interval = setInterval(() => {
-      setRateLimitTimer((prev) => {
-        if (prev <= 1) {
-          setErrorMsg('');
-          setAuthErrorDetails(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [rateLimitTimer]);
-
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isOnline) {
       setErrorMsg('You are currently offline. Authentication requires an active internet connection.');
-      return;
-    }
-    if (rateLimitTimer > 0) {
-      setErrorMsg(`Rate limit active. Please wait ${rateLimitTimer} seconds.`);
       return;
     }
 
@@ -154,12 +131,10 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
       setErrorMsg(parsed.message);
 
       if (parsed.type === 'rate_limit') {
-        const seconds = parsed.waitSeconds || 60;
-        setRateLimitTimer(seconds);
         onToast?.({
           type: 'error',
-          title: 'Rate Limit Reached',
-          message: `Please wait ${seconds} seconds before attempting another request.`,
+          title: 'Rate Limit',
+          message: 'Too many requests. Please wait a moment or enter via Instant Guest Access.',
         });
       } else if (parsed.type === 'email_not_confirmed') {
         onToast?.({
@@ -223,9 +198,6 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
       setTimeout(() => setResetSuccess(false), 7000);
     } catch (err) {
       const parsed = err.parsed || parseAuthError(err);
-      if (parsed.type === 'rate_limit') {
-        setRateLimitTimer(parsed.waitSeconds || 60);
-      }
       setErrorMsg(parsed.message);
       onToast?.({
         type: 'error',
@@ -393,29 +365,6 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
             </div>
           )}
 
-          {/* Rate Limit Active Cooldown Banner */}
-          {rateLimitTimer > 0 && (
-            <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5 animate-fadeIn">
-              <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5 animate-pulse" />
-              <div className="flex-1">
-                <span className="font-bold block">Rate Limit Active — Cooldown Timer</span>
-                <p className="mt-0.5 text-amber-700 dark:text-amber-300">
-                  Supabase limits authentication requests to prevent spam. Please wait before requesting another action.
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="h-2 flex-1 bg-amber-200 dark:bg-amber-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-amber-500 transition-all duration-1000 ease-linear rounded-full"
-                      style={{ width: `${Math.min(100, (rateLimitTimer / 60) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-300">
-                    {rateLimitTimer}s
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Unconfirmed Email Special Action Banner */}
           {authErrorDetails?.type === 'email_not_confirmed' && (
@@ -536,13 +485,27 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
             </div>
           )}
 
-          {/* Standard Error Notice (if not email unconfirmed or rate limited) */}
+          {/* Standard Error Notice */}
           {errorMsg && authErrorDetails?.type !== 'email_not_confirmed' && (
-            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="font-medium leading-relaxed">{errorMsg}</span>
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-700 dark:text-rose-300 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="font-medium leading-relaxed">{errorMsg}</span>
+                </div>
               </div>
+              {authErrorDetails?.type === 'rate_limit' && (
+                <div className="pt-0.5">
+                  <button
+                    type="button"
+                    onClick={handleDemoLogin}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 dark:hover:bg-amber-900/70 text-amber-900 dark:text-amber-200 font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Enter in Instant Guest Mode</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -585,7 +548,7 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    disabled={resetLoading || rateLimitTimer > 0}
+                    disabled={resetLoading}
                     className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 underline cursor-pointer disabled:opacity-50"
                   >
                     {resetLoading ? 'Sending link...' : 'Send Password Reset Link'}
@@ -711,7 +674,7 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
 
           <button
             type="submit"
-            disabled={loading || !isOnline || rateLimitTimer > 0}
+            disabled={loading || !isOnline}
             className="w-full min-h-[44px] mt-2 py-2.5 px-4 rounded-xl bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
@@ -720,11 +683,6 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
               <>
                 <WifiOff className="w-4 h-4" />
                 <span>Offline — Authentication Disabled</span>
-              </>
-            ) : rateLimitTimer > 0 ? (
-              <>
-                <Clock className="w-4 h-4 animate-pulse" />
-                <span>Rate Limited — Wait {rateLimitTimer}s</span>
               </>
             ) : (
               <>
