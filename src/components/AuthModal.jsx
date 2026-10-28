@@ -125,7 +125,7 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
         }
       }
     } catch (err) {
-      console.error('Authentication error:', err);
+      console.warn('Authentication notice:', err.message || err);
       const parsed = err.parsed || parseAuthError(err);
       setAuthErrorDetails(parsed);
       setErrorMsg(parsed.message);
