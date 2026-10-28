@@ -24,7 +24,7 @@ import { useNetwork } from '../context/NetworkContext';
 import { parseAuthError } from '../lib/supabase';
 
 export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
-  const { login, register, resetPassword, isConfigured } = useAuth();
+  const { login, register, resetPassword, resendConfirmation, loginAsDemo, isConfigured } = useAuth();
   const { isOnline } = useNetwork();
   const [tab, setTab] = useState('login'); // 'login' | 'signup'
 
@@ -47,6 +47,10 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
   // Password reset state
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+
+  // Email confirmation resend state
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
 
   // Active interval countdown for rate limit cooldown
   useEffect(() => {
@@ -233,6 +237,36 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
     }
   };
 
+  const handleResendConfirmation = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setErrorMsg('Please enter your email above to receive the confirmation link.');
+      return;
+    }
+    setResendLoading(true);
+    setResendSent(false);
+    try {
+      await resendConfirmation(cleanEmail);
+      setResendSent(true);
+      onToast?.({
+        type: 'success',
+        title: 'Confirmation Email Sent',
+        message: `Verification link sent to ${cleanEmail}. Please check your inbox!`,
+      });
+      setSuccessMsg(`Confirmation email sent to ${cleanEmail}! Please check your inbox and verify your email.`);
+    } catch (err) {
+      const parsed = err.parsed || parseAuthError(err);
+      setErrorMsg(parsed.message || 'Failed to resend confirmation email.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleDemoLogin = () => {
+    loginAsDemo?.('alex.scholar@mit.edu');
+    onClose?.();
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs p-4 animate-fadeIn">
       <div className="min-h-full flex items-center justify-center">
@@ -389,18 +423,46 @@ export default function AuthModal({ isOpen, onClose, onOpenConfig, onToast }) {
               <div className="flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold block text-sm">Instant Sign-In Setup</span>
+                  <span className="font-bold block text-sm">Account Pending Email Confirmation</span>
                   <p className="text-amber-700 dark:text-amber-300 mt-0.5 leading-relaxed">
-                    Email verification code/links are disabled on NoteShare to prevent broken redirect links. Turn OFF <strong>"Confirm email"</strong> in Supabase for instant password sign-in.
+                    This account ({email.trim() || 'this email'}) was created with email confirmation enabled in Supabase, but the email address has not been verified yet.
                   </p>
                 </div>
               </div>
+
+              {resendSent ? (
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Confirmation email resent! Please check your student inbox (and Spam folder) to verify.</span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={handleResendConfirmation}
+                    disabled={resendLoading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>{resendLoading ? 'Sending...' : 'Resend Confirmation Email'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDemoLogin}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-semibold text-xs transition-colors cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Instant Guest Access</span>
+                  </button>
+                </div>
+              )}
 
               {/* Fast-Track Advice */}
               <div className="p-3 rounded-xl bg-white/80 dark:bg-gray-800/90 border border-amber-200/80 dark:border-amber-800/40 text-[11px] space-y-1.5">
                 <div className="flex items-center gap-1 font-bold text-amber-800 dark:text-amber-300">
                   <Sparkles className="w-3 h-3 text-amber-600" />
-                  <span>How to enable instant login in Supabase:</span>
+                  <span>Admin Fix (Enable 1-Click Instant Sign-In for all users):</span>
                 </div>
                 <p className="text-slate-600 dark:text-gray-300 leading-relaxed">
                   1. In <strong>Supabase Dashboard &gt; Authentication &gt; Providers &gt; Email</strong>, switch <strong>"Confirm email"</strong> to <strong>OFF</strong>.

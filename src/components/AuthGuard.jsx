@@ -51,6 +51,7 @@ export default function AuthGuard({ children }) {
     login,
     register,
     loginAsDemo,
+    resendConfirmation,
     resetPassword,
     isConfigured,
   } = useAuth();
@@ -72,6 +73,10 @@ export default function AuthGuard({ children }) {
   // Password reset state
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+
+  // Resend email confirmation state
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
 
   // Form states
   const [email, setEmail] = useState('');
@@ -233,6 +238,26 @@ export default function AuthGuard({ children }) {
       setErrorMsg(parsed.message);
     } finally {
       setResetLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setErrorMsg('Please enter your email above to receive the confirmation link.');
+      return;
+    }
+    setResendLoading(true);
+    setResendSent(false);
+    try {
+      await resendConfirmation(cleanEmail);
+      setResendSent(true);
+      setSuccessMsg(`Confirmation email sent to ${cleanEmail}! Please check your inbox and verify your email.`);
+    } catch (err) {
+      const parsed = err.parsed || parseAuthError(err);
+      setErrorMsg(parsed.message || 'Failed to resend confirmation email.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -472,29 +497,57 @@ export default function AuthGuard({ children }) {
                 {/* Unconfirmed Email Special Action Banner */}
                 {(authErrorDetails?.type === 'email_not_confirmed' ||
                   /email.*not.*confirmed/i.test(errorMsg)) && (
-                  <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-2.5 animate-fadeIn">
+                  <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-3 animate-fadeIn">
                     <div className="flex items-start gap-2.5">
                       <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-sm block">Instant Sign-In Setup</span>
+                        <span className="font-bold text-sm block">Account Pending Email Confirmation</span>
                         <p className="text-amber-800 dark:text-amber-300 mt-1 leading-relaxed">
-                          Email verification codes are disabled on NoteShare to prevent broken redirect links. Turn OFF <strong>"Confirm email"</strong> in your Supabase Dashboard for instant access.
+                          Your account ({email.trim() || 'this email'}) was created with email confirmation enabled in Supabase, but the email has not been confirmed yet.
                         </p>
                       </div>
                     </div>
 
-                    {/* Developer Fast-Track Advice */}
-                    <div className="p-3.5 rounded-xl bg-white/90 dark:bg-gray-800/90 border border-amber-200/80 dark:border-amber-800/40 text-[11px] space-y-1.5">
+                    {resendSent ? (
+                      <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Confirmation email resent! Please check your student inbox (and Spam folder) to verify.</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={handleResendConfirmation}
+                          disabled={resendLoading}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>{resendLoading ? 'Sending Link...' : 'Resend Confirmation Email'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleDemoLogin}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Enter in Instant Guest Mode</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Supabase Dashboard 1-Click Fix Instructions */}
+                    <div className="p-3 rounded-xl bg-white/90 dark:bg-gray-800/90 border border-amber-200/80 dark:border-amber-800/40 text-[11px] space-y-1.5">
                       <div className="flex items-center gap-1 font-bold text-amber-800 dark:text-amber-300">
                         <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                        <span>How to enable instant login in Supabase:</span>
+                        <span>Admin Fix (Enable 1-Click Instant Sign-In for all users):</span>
                       </div>
                       <div className="text-slate-700 dark:text-gray-300 space-y-1 pt-0.5">
                         <p>
-                          <strong>1. Turn Off Email Confirmation:</strong> In <strong>Authentication &gt; Providers &gt; Email</strong>, toggle <strong>"Confirm email"</strong> to <strong>OFF</strong>. Users can log in immediately with their password.
+                          <strong>1. Turn OFF Email Confirmation:</strong> In <strong>Supabase Dashboard &gt; Authentication &gt; Providers &gt; Email</strong>, toggle <strong>"Confirm email"</strong> to <strong>OFF</strong>. Users can log in immediately with their password without email codes.
                         </p>
                         <p>
-                          <strong>2. Confirm Existing Account:</strong> In <strong>Authentication &gt; Users</strong>, click the <strong>...</strong> menu next to your email and select <strong>"Confirm email"</strong>.
+                          <strong>2. Confirm Existing Account:</strong> In <strong>Authentication &gt; Users</strong>, click the <strong>...</strong> menu next to <strong>{email.trim() || 'your email'}</strong> and select <strong>"Confirm email"</strong>.
                         </p>
                       </div>
                     </div>
@@ -506,9 +559,9 @@ export default function AuthGuard({ children }) {
                           setErrorMsg('');
                           setAuthErrorDetails(null);
                         }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
                       >
-                        <span>Try Signing In Again</span>
+                        Try Logging In Again
                       </button>
                       <button
                         type="button"
