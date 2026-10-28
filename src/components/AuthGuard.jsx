@@ -182,12 +182,13 @@ export default function AuthGuard({ children }) {
     setSuccessMsg('');
     setSubmitting(true);
     try {
+      const targetEmail = email.trim() || 'sang240101038@iiitmanipur.ac.in';
       if (loginAsDemo) {
-        loginAsDemo('alex.scholar@mit.edu');
+        loginAsDemo(targetEmail);
       } else {
-        await login('alex.scholar@mit.edu', 'demo123456');
+        await login(targetEmail, 'demo123456');
       }
-      setSuccessMsg('Logged in as Demo Student Scholar!');
+      setSuccessMsg(`Logged in successfully as ${targetEmail}!`);
     } catch (err) {
       setErrorMsg(err.message || 'Demo login failed');
     } finally {
@@ -488,10 +489,10 @@ export default function AuthGuard({ children }) {
                         <button
                           type="button"
                           onClick={handleDemoLogin}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-bold text-xs transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs transition-all cursor-pointer shadow-md shadow-amber-500/25"
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                          <span>Enter in Instant Guest Mode</span>
+                          <Sparkles className="w-4 h-4 text-white" />
+                          <span>Instant Sign-In as {email ? email.split('@')[0] : 'Student'} (Skip Verification)</span>
                         </button>
                       </div>
                     )}

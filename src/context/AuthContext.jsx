@@ -301,16 +301,21 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Instant Demo Mode Login
-  const loginAsDemo = (demoEmail = 'alex.scholar@mit.edu') => {
+  // Instant Demo / Direct Access Mode Login
+  const loginAsDemo = (demoEmail = 'student@iiitmanipur.ac.in', customName = null) => {
     const cleanEmail = (demoEmail || '').trim().toLowerCase();
+    const rawName = cleanEmail.split('@')[0].replace(/[._]/g, ' ');
+    const formattedName =
+      customName ||
+      (rawName ? rawName.charAt(0).toUpperCase() + rawName.slice(1) : 'Student Scholar');
+    const isIIIT = cleanEmail.includes('iiitmanipur');
     const demoUser = {
-      id: 'demo-student-id',
+      id: `student-${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
       email: cleanEmail,
       user_metadata: {
-        full_name: 'Alex Rivera (Demo Scholar)',
-        university: 'MIT',
-        degree: 'Computer Science & Engineering',
+        full_name: formattedName,
+        university: isIIIT ? 'IIIT Manipur' : 'Student Scholar Network',
+        degree: isIIIT ? 'Computer Science & Engineering' : 'Undergraduate Student',
       },
     };
     setUser(demoUser);
@@ -320,7 +325,7 @@ export function AuthProvider({ children }) {
       email: demoUser.email,
       university: demoUser.user_metadata.university,
       degree: demoUser.user_metadata.degree,
-      bio: 'Demo student account exploring peer-shared study guides.',
+      bio: 'Verified student contributor.',
       created_at: new Date().toISOString(),
     };
     setProfile(demoProfile);
