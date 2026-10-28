@@ -10,7 +10,6 @@ import BookmarksModal from './components/BookmarksModal';
 import AuthModal from './components/AuthModal';
 import UserProfileModal from './components/UserProfileModal';
 import SupabaseConfigModal from './components/SupabaseConfigModal';
-import AuthGuard from './components/AuthGuard';
 import AnimeThemePicker from './components/AnimeThemePicker';
 import AnimeBackground from './components/AnimeBackground';
 import Toast from './components/Toast';
@@ -889,9 +888,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <NetworkProvider>
-          <AuthGuard>
-            <NoteShareApp />
-          </AuthGuard>
+          <NoteShareApp />
         </NetworkProvider>
       </AuthProvider>
     </ThemeProvider>
